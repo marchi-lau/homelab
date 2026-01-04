@@ -1,0 +1,220 @@
+---
+# HelmRepository for Prometheus Community charts
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: prometheus-community
+  namespace: flux-system
+spec:
+  interval: 24h
+  url: https://prometheus-community.github.io/helm-charts
+---
+# Namespace for monitoring stack
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    app.kubernetes.io/name: monitoring
+---
+# HelmRelease for kube-prometheus-stack
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: monitoring
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      version: "72.x"
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+      interval: 24h
+  install:
+    crds: Create
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  values:
+    # ============================================
+    # GLOBAL SETTINGS
+    # ============================================
+    fullnameOverride: prometheus
+
+    # ============================================
+    # K3s-SPECIFIC: Disable unavailable components
+    # ============================================
+    # K3s uses SQLite instead of etcd
+    kubeEtcd:
+      enabled: false
+
+    # K3s bundles control plane - metrics not exposed by default
+    kubeControllerManager:
+      enabled: false
+    kubeScheduler:
+      enabled: false
+    kubeProxy:
+      enabled: false
+
+    # Disable etcd rules (will fail without etcd)
+    defaultRules:
+      rules:
+        etcd: false
+        kubeSchedulerAlerting: false
+        kubeSchedulerRecording: false
+
+    # ============================================
+    # ALERTMANAGER: Disabled to save resources
+    # ============================================
+    alertmanager:
+      enabled: false
+
+    # ============================================
+    # PROMETHEUS: Lightweight configuration
+    # ============================================
+    prometheus:
+      prometheusSpec:
+        # Retention: 7 days
+        retention: 7d
+        retentionSize: "2GB"
+
+        # Resource limits (~300MB)
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+
+        # Storage: Use local-path StorageClass
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: local-path
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: 5Gi
+
+        # Scrape interval: 60s to reduce load
+        scrapeInterval: 60s
+        evaluationInterval: 60s
+
+        # Monitor all namespaces
+        podMonitorSelectorNilUsesHelmValues: false
+        serviceMonitorSelectorNilUsesHelmValues: false
+
+    # ============================================
+    # PROMETHEUS OPERATOR
+    # ============================================
+    prometheusOperator:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 128Mi
+
+    # ============================================
+    # GRAFANA: Lightweight configuration
+    # ============================================
+    grafana:
+      enabled: true
+
+      # Admin credentials (change on first login!)
+      adminUser: admin
+      adminPassword: admin
+
+      # Resource limits (~150MB)
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+
+      # Persistence
+      persistence:
+        enabled: true
+        type: pvc
+        storageClassName: local-path
+        accessModes:
+          - ReadWriteOnce
+        size: 1Gi
+
+      # Sidecar for dashboard loading
+      sidecar:
+        dashboards:
+          enabled: true
+          searchNamespace: ALL
+        datasources:
+          enabled: true
+
+      # Default dashboards
+      defaultDashboardsEnabled: true
+      defaultDashboardsTimezone: Asia/Hong_Kong
+
+      # Service type
+      service:
+        type: ClusterIP
+        port: 80
+
+    # ============================================
+    # NODE EXPORTER: Essential for node metrics
+    # ============================================
+    nodeExporter:
+      enabled: true
+
+    prometheus-node-exporter:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 24Mi
+        limits:
+          cpu: 100m
+          memory: 64Mi
+
+    # ============================================
+    # KUBE-STATE-METRICS: Essential for K8s metrics
+    # ============================================
+    kubeStateMetrics:
+      enabled: true
+
+    kube-state-metrics:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+---
+# Ingress for Grafana via Cloudflare Tunnel
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  ingressClassName: cloudflare-tunnel
+  rules:
+    - host: grafana.marchi.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus-grafana
+                port:
+                  number: 80

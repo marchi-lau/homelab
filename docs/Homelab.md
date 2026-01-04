@@ -11,6 +11,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 - [[Runbooks/Flux-Commands|Flux GitOps Commands]]
 - [[Apps/n8n|n8n Workflow Automation]]
 - [[Apps/rustfs|RustFS S3 Storage]]
+- [[Apps/Monitoring|Prometheus + Grafana Monitoring]]
 
 ---
 
@@ -73,6 +74,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 |-----|-----|-----------|---------|
 | **n8n** | https://n8n-02.marchi.app | n8n | 5Gi PVC |
 | **RustFS** | https://s3.marchi.app (API) / https://s3-console.marchi.app (Console) | rustfs | 10Gi PVC |
+| **Grafana** | https://grafana.marchi.app | monitoring | 5Gi (Prometheus) + 1Gi (Grafana) |
 
 ---
 
@@ -139,6 +141,7 @@ Services are exposed via Cloudflare Tunnel Ingress Controller. No open ports req
 | n8n-02.marchi.app | n8n:5678 | n8n |
 | s3.marchi.app | rustfs:9000 | rustfs |
 | s3-console.marchi.app | rustfs:9001 | rustfs |
+| grafana.marchi.app | prometheus-grafana:80 | monitoring |
 
 To expose a new service, add an Ingress:
 
@@ -192,6 +195,7 @@ spec:
 - [x] Helm installed
 - [x] Cloudflare Tunnel Ingress Controller
 - [x] n8n deployment
+- [x] Prometheus + Grafana monitoring stack (Helm)
 - [ ] Cloudflare WAF bypass rule
 - [ ] Synology VM worker node
 - [ ] NFS StorageClass
@@ -206,6 +210,8 @@ homelab/
 │   └── homelab/
 │       ├── apps/                    # Application manifests
 │       │   ├── n8n.yaml
+│       │   ├── rustfs.yaml
+│       │   ├── monitoring.yaml
 │       │   └── kustomization.yaml
 │       └── flux-system/             # Flux components
 │           ├── gotk-components.yaml
