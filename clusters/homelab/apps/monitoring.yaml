@@ -165,8 +165,8 @@ spec:
           folderAnnotation: grafana_folder
           provider:
             foldersFromFilesStructure: false
-            # Empty string = General folder (root level, visible on main page)
-            folder: ""
+            # Organize dashboards in "Kubernetes" folder
+            folder: "Kubernetes"
         datasources:
           enabled: true
 
