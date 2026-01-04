@@ -134,6 +134,10 @@ spec:
       adminUser: admin
       adminPassword: admin
 
+      # Disable init chown to avoid permission issues with local-path
+      initChownData:
+        enabled: false
+
       # Resource limits (~150MB)
       resources:
         requests:
