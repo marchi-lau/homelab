@@ -107,6 +107,204 @@ for bucket in response['Buckets']:
 
 ---
 
+## Practical Use Cases
+
+### 1. n8n Workflow File Storage
+
+Store workflow outputs, attachments, and processed files from n8n automations.
+
+```bash
+# Create bucket for n8n
+aws --endpoint-url https://s3.marchi.app s3 mb s3://n8n-files
+
+# n8n can use S3 nodes with:
+# - Endpoint: https://s3.marchi.app
+# - Region: us-east-1 (or any placeholder)
+# - Bucket: n8n-files
+```
+
+**Use in n8n**: Add "AWS S3" node → Configure with RustFS credentials → Upload/download files in workflows.
+
+### 2. Database Backups
+
+Automated PostgreSQL/MySQL backup storage with lifecycle management.
+
+```bash
+# Create backups bucket
+aws --endpoint-url https://s3.marchi.app s3 mb s3://db-backups
+
+# Backup script example (add to cron)
+#!/bin/bash
+DATE=$(date +%Y-%m-%d_%H%M)
+pg_dump mydb | gzip | aws --endpoint-url https://s3.marchi.app s3 cp - s3://db-backups/postgres/mydb-${DATE}.sql.gz
+
+# Keep last 7 days (run daily)
+aws --endpoint-url https://s3.marchi.app s3 ls s3://db-backups/postgres/ | \
+  sort -r | tail -n +8 | awk '{print $4}' | \
+  xargs -I {} aws --endpoint-url https://s3.marchi.app s3 rm s3://db-backups/postgres/{}
+```
+
+### 3. Docker Registry Backend
+
+Use as storage backend for a private container registry.
+
+```yaml
+# In registry deployment
+env:
+  - name: REGISTRY_STORAGE
+    value: s3
+  - name: REGISTRY_STORAGE_S3_BUCKET
+    value: docker-registry
+  - name: REGISTRY_STORAGE_S3_REGION
+    value: us-east-1
+  - name: REGISTRY_STORAGE_S3_REGIONENDPOINT
+    value: https://s3.marchi.app
+```
+
+### 4. Terraform State Backend
+
+Store Terraform state remotely for infrastructure-as-code.
+
+```hcl
+# terraform backend config
+terraform {
+  backend "s3" {
+    bucket         = "terraform-state"
+    key            = "homelab/terraform.tfstate"
+    region         = "us-east-1"
+    endpoint       = "https://s3.marchi.app"
+    skip_credentials_validation = true
+    skip_metadata_api_check     = true
+    skip_region_validation      = true
+    force_path_style            = true
+  }
+}
+```
+
+```bash
+# Create the bucket first
+aws --endpoint-url https://s3.marchi.app s3 mb s3://terraform-state
+```
+
+### 5. Media & Photo Archive
+
+Personal photo backup with organized folder structure.
+
+```bash
+# Create media bucket
+aws --endpoint-url https://s3.marchi.app s3 mb s3://media-archive
+
+# Sync photos organized by year/month
+aws --endpoint-url https://s3.marchi.app s3 sync ~/Photos/2024 s3://media-archive/photos/2024/
+
+# Sync videos
+aws --endpoint-url https://s3.marchi.app s3 sync ~/Videos s3://media-archive/videos/ --exclude "*.tmp"
+```
+
+### 6. Application Logs Archive
+
+Long-term log storage for compliance or debugging.
+
+```bash
+# Create logs bucket
+aws --endpoint-url https://s3.marchi.app s3 mb s3://app-logs
+
+# Fluent Bit output config (in K8s)
+# [OUTPUT]
+#     Name          s3
+#     Match         *
+#     bucket        app-logs
+#     region        us-east-1
+#     endpoint      https://s3.marchi.app
+#     total_file_size 50M
+#     upload_timeout 10m
+```
+
+### 7. Kubernetes Velero Backups
+
+Cluster backup and disaster recovery.
+
+```bash
+# Install Velero with S3 backend
+velero install \
+  --provider aws \
+  --plugins velero/velero-plugin-for-aws:v1.8.0 \
+  --bucket velero-backups \
+  --secret-file ./credentials-velero \
+  --backup-location-config region=us-east-1,s3ForcePathStyle=true,s3Url=https://s3.marchi.app \
+  --use-volume-snapshots=false
+```
+
+### 8. Static Website Hosting
+
+Host static sites directly from S3 buckets.
+
+```bash
+# Create and configure website bucket
+aws --endpoint-url https://s3.marchi.app s3 mb s3://my-website
+aws --endpoint-url https://s3.marchi.app s3 sync ./dist s3://my-website/ --acl public-read
+
+# Set bucket policy for public read (via console or mc client)
+```
+
+### 9. Machine Learning Model Storage
+
+Version and store ML models for deployment.
+
+```python
+import boto3
+import joblib
+
+s3 = boto3.client('s3', endpoint_url='https://s3.marchi.app',
+                  aws_access_key_id='KEY', aws_secret_access_key='SECRET')
+
+# Save model
+joblib.dump(model, '/tmp/model_v1.joblib')
+s3.upload_file('/tmp/model_v1.joblib', 'ml-models', 'classifier/v1/model.joblib')
+
+# Load model in production
+s3.download_file('ml-models', 'classifier/v1/model.joblib', '/tmp/model.joblib')
+model = joblib.load('/tmp/model.joblib')
+```
+
+### 10. Encrypted Secrets Backup
+
+Backup encrypted secrets and certificates.
+
+```bash
+# Create secure bucket
+aws --endpoint-url https://s3.marchi.app s3 mb s3://secrets-backup
+
+# Backup with client-side encryption
+gpg --encrypt --recipient your@email.com secrets.yaml | \
+  aws --endpoint-url https://s3.marchi.app s3 cp - s3://secrets-backup/k8s-secrets-$(date +%Y%m%d).yaml.gpg
+
+# Restore
+aws --endpoint-url https://s3.marchi.app s3 cp s3://secrets-backup/k8s-secrets-20240104.yaml.gpg - | \
+  gpg --decrypt > secrets.yaml
+```
+
+---
+
+## Recommended Bucket Structure
+
+```
+s3.marchi.app/
+├── n8n-files/           # Workflow automation files
+├── db-backups/          # Database dumps
+│   ├── postgres/
+│   └── mysql/
+├── terraform-state/     # Infrastructure state
+├── media-archive/       # Personal media
+│   ├── photos/
+│   └── videos/
+├── app-logs/            # Application logs
+├── velero-backups/      # K8s cluster backups
+└── secrets-backup/      # Encrypted credentials
+```
+
+---
+
 ## Manifest
 
 Location: `clusters/homelab/apps/rustfs.yaml`
