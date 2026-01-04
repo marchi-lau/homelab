@@ -10,6 +10,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 - [[Runbooks/Quick-Commands|Quick Commands]]
 - [[Runbooks/Flux-Commands|Flux GitOps Commands]]
 - [[Apps/n8n|n8n Workflow Automation]]
+- [[Apps/rustfs|RustFS S3 Storage]]
 
 ---
 
@@ -71,6 +72,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 | App | URL | Namespace | Storage |
 |-----|-----|-----------|---------|
 | **n8n** | https://n8n-02.marchi.app | n8n | 5Gi PVC |
+| **RustFS** | https://s3.marchi.app (API) / https://s3-console.marchi.app (Console) | rustfs | 10Gi PVC |
 
 ---
 
@@ -135,6 +137,8 @@ Services are exposed via Cloudflare Tunnel Ingress Controller. No open ports req
 | Host | Service | Namespace |
 |------|---------|-----------|
 | n8n-02.marchi.app | n8n:5678 | n8n |
+| s3.marchi.app | rustfs:9000 | rustfs |
+| s3-console.marchi.app | rustfs:9001 | rustfs |
 
 To expose a new service, add an Ingress:
 
@@ -227,13 +231,13 @@ homelab/
 
 ## Network Info
 
-| Item | Value |
-|------|-------|
-| VLAN Name | Homelab |
-| VLAN ID | 10 |
-| Subnet | 10.10.10.0/24 |
-| Gateway | 10.10.10.1 |
-| WiFi | "Homelab" (WPA3) |
+| Item      | Value            |     |
+| --------- | ---------------- | --- |
+| VLAN Name | Homelab          |     |
+| VLAN ID   | 10               |     |
+| Subnet    | 10.10.10.0/24    |     |
+| Gateway   | 10.10.10.1       |     |
+| WiFi      | "Homelab" (WPA3) |     |
 
 ---
 
