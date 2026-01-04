@@ -1,40 +1,53 @@
 # Homelab
 
-K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps.
+K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloudflare Tunnel.
 
 ## Quick Links
 
 - [[Nodes/S740-Master|S740 Master Node]] - Implementation guide
 - [[Network/VLAN-Setup|VLAN Configuration]]
+- [[Network/Cloudflare-Tunnel|Cloudflare Tunnel Setup]]
 - [[Runbooks/Quick-Commands|Quick Commands]]
 - [[Runbooks/Flux-Commands|Flux GitOps Commands]]
+- [[Apps/n8n|n8n Workflow Automation]]
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                   Homelab Network (VLAN 10)                     │
-│                       10.10.10.0/24                             │
-│                                                                 │
-│   ┌─────────────────┐           ┌─────────────────────────────┐ │
-│   │  S740 Master    │           │     Synology DS1821+        │ │
-│   │  10.10.10.10    │           │     (Future)                │ │
-│   │                 │           │                             │ │
-│   │  ✅ K3s Server  │           │  ⏳ VM Worker: 10.10.10.20  │ │
-│   │  ✅ Ubuntu 24.04│           │  ⏳ NFS Storage: 10.10.10.50│ │
-│   │  ✅ Flux GitOps │           │     64GB RAM                │ │
-│   │  ✅ 4GB RAM     │           │                             │ │
-│   └─────────────────┘           └─────────────────────────────┘ │
-│            │                                                    │
-│            ▼                                                    │
-│   ┌─────────────────┐                                           │
-│   │  GitHub Repo    │                                           │
-│   │  marchi-lau/    │◄──── Flux syncs every 10m                 │
-│   │  homelab        │                                           │
-│   └─────────────────┘                                           │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│  Internet                                                                │
+│      │                                                                   │
+│      ▼                                                                   │
+│  ┌──────────────────────┐                                                │
+│  │   Cloudflare Edge    │  ◄── WAF, DDoS protection, SSL                │
+│  │  n8n-02.marchi.app   │                                                │
+│  └──────────┬───────────┘                                                │
+│             │ Encrypted tunnel (outbound only)                           │
+│             ▼                                                            │
+│  ┌──────────────────────────────────────────────────────────────────┐    │
+│  │                   Homelab Network (VLAN 10)                      │    │
+│  │                       10.10.10.0/24                              │    │
+│  │                                                                  │    │
+│  │   ┌─────────────────┐       ┌──────────────────────────────────┐│    │
+│  │   │  S740 Master    │       │     Synology DS1821+ (Future)   ││    │
+│  │   │  10.10.10.10    │       │                                  ││    │
+│  │   │                 │       │  ⏳ VM Worker: 10.10.10.20       ││    │
+│  │   │  ✅ K3s Server  │       │  ⏳ NFS Storage: 10.10.10.50     ││    │
+│  │   │  ✅ Flux GitOps │       │     64GB RAM                     ││    │
+│  │   │  ✅ CF Tunnel   │       │                                  ││    │
+│  │   │  ✅ n8n         │       └──────────────────────────────────┘│    │
+│  │   └────────┬────────┘                                           │    │
+│  │            │                                                    │    │
+│  │            ▼                                                    │    │
+│  │   ┌─────────────────┐                                           │    │
+│  │   │  GitHub Repo    │◄──── Flux syncs every 10m                 │    │
+│  │   │  marchi-lau/    │                                           │    │
+│  │   │  homelab        │                                           │    │
+│  │   └─────────────────┘                                           │    │
+│  └──────────────────────────────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -45,10 +58,19 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps.
 |-----------|--------|---------|
 | **S740 Master** | ✅ Running | K3s v1.34.3, 10.10.10.10 |
 | **Flux GitOps** | ✅ Running | v2.7.5, syncing from GitHub |
+| **Cloudflare Tunnel** | ✅ Running | Ingress controller + cloudflared |
+| **n8n** | ✅ Running | https://n8n-02.marchi.app |
 | **GitHub Repo** | ✅ Active | [marchi-lau/homelab](https://github.com/marchi-lau/homelab) |
 | Synology Worker | ⏳ Planned | VM on DS1821+ |
 | NFS Storage | ⏳ Planned | Synology share |
-| n8n | ⏳ Planned | Workflow automation |
+
+---
+
+## Deployed Apps
+
+| App | URL | Namespace | Storage |
+|-----|-----|-----------|---------|
+| **n8n** | https://n8n-02.marchi.app | n8n | 5Gi PVC |
 
 ---
 
@@ -85,6 +107,9 @@ kubectl get nodes
 # Check Flux status
 flux get all -A
 
+# Check ingresses
+kubectl get ingress -A
+
 # SSH to node
 ssh ubuntu@10.10.10.10
 ```
@@ -99,6 +124,40 @@ ssh ubuntu@10.10.10.10
 | Kubeconfig | ~/.kube/config-s740 |
 | GitOps Repo | github.com/marchi-lau/homelab |
 | GitOps Path | clusters/homelab |
+| Tunnel Name | homelab-k3s |
+
+---
+
+## Ingress (Cloudflare Tunnel)
+
+Services are exposed via Cloudflare Tunnel Ingress Controller. No open ports required.
+
+| Host | Service | Namespace |
+|------|---------|-----------|
+| n8n-02.marchi.app | n8n:5678 | n8n |
+
+To expose a new service, add an Ingress:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp
+  namespace: myapp
+spec:
+  ingressClassName: cloudflare-tunnel
+  rules:
+    - host: myapp.marchi.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: myapp
+                port:
+                  number: 8080
+```
 
 ---
 
@@ -126,9 +185,12 @@ ssh ubuntu@10.10.10.10
 - [x] GitHub repository created
 - [x] Flux bootstrapped to cluster
 - [x] Apps Kustomization configured
+- [x] Helm installed
+- [x] Cloudflare Tunnel Ingress Controller
+- [x] n8n deployment
+- [ ] Cloudflare WAF bypass rule
 - [ ] Synology VM worker node
 - [ ] NFS StorageClass
-- [ ] n8n deployment
 
 ---
 
@@ -139,13 +201,16 @@ homelab/
 ├── clusters/
 │   └── homelab/
 │       ├── apps/                    # Application manifests
-│       │   └── kustomization.yaml   # Apps to deploy
+│       │   ├── n8n.yaml
+│       │   └── kustomization.yaml
 │       └── flux-system/             # Flux components
 │           ├── gotk-components.yaml
 │           ├── gotk-sync.yaml
 │           ├── apps-kustomization.yaml
 │           └── kustomization.yaml
-├── CLAUDE.md
+├── docs/                            # Documentation (Obsidian)
+├── .mcp.json                        # Claude Code MCP config
+├── CLAUDE.md                        # Agent instructions
 └── README.md
 ```
 
@@ -172,22 +237,16 @@ homelab/
 
 ---
 
-## NodePort Allocation
-
-| Port | App | Status |
-|------|-----|--------|
-| 30500-30599 | Reserved for apps | Available |
-
----
-
 ## Related
 
 - [[Nodes/S740-Master|S740 Implementation Guide]]
 - [[Network/VLAN-Setup|VLAN Configuration]]
+- [[Network/Cloudflare-Tunnel|Cloudflare Tunnel Setup]]
+- [[Apps/n8n|n8n App]]
 - [[Runbooks/Quick-Commands|Quick Commands]]
 - [[Runbooks/Flux-Commands|Flux Commands]]
 - [[Nodes/Synology-Worker|Synology Worker (Planned)]]
 
 ## Tags
 
-#homelab #k3s #flux #gitops #infrastructure
+#homelab #k3s #flux #gitops #cloudflare #infrastructure
