@@ -170,20 +170,6 @@ spec:
       defaultDashboardsEnabled: true
       defaultDashboardsTimezone: Asia/Hong_Kong
 
-      # Dashboard providers - put in General folder (root level)
-      dashboardProviders:
-        dashboardproviders.yaml:
-          apiVersion: 1
-          providers:
-            - name: 'default'
-              orgId: 1
-              folder: ''
-              type: file
-              disableDeletion: false
-              editable: true
-              options:
-                path: /tmp/dashboards
-
       # Service type
       service:
         type: ClusterIP
