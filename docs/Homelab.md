@@ -141,7 +141,7 @@ Services are exposed via Cloudflare Tunnel Ingress Controller. No open ports req
 | n8n-02.marchi.app | n8n:5678 | n8n |
 | s3.marchi.app | rustfs:9000 | rustfs |
 | s3-console.marchi.app | rustfs:9001 | rustfs |
-| grafana.marchi.app | prometheus-grafana:80 | monitoring |
+| grafana.marchi.app | kube-prometheus-stack-grafana:80 | monitoring |
 
 To expose a new service, add an Ingress:
 

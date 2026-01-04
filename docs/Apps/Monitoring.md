@@ -87,12 +87,29 @@ Prometheus + Grafana monitoring for the K3s homelab cluster.
 
 ### Built-in Dashboards
 
-The stack includes pre-configured dashboards:
-- Kubernetes / Compute Resources / Cluster
-- Kubernetes / Compute Resources / Namespace (Pods)
-- Node Exporter / Nodes
+Dashboards are organized in the **Kubernetes** folder:
+
 - Kubernetes / API server
+- Kubernetes / Compute Resources / Cluster
+- Kubernetes / Compute Resources / Multi-Cluster
+- Kubernetes / Compute Resources / Namespace (Pods)
+- Kubernetes / Compute Resources / Namespace (Workloads)
+- Kubernetes / Compute Resources / Node (Pods)
+- Kubernetes / Compute Resources / Pod
+- Kubernetes / Compute Resources / Workload
+- Kubernetes / Kubelet
+- Kubernetes / Networking / Cluster
+- Kubernetes / Networking / Namespace (Pods)
+- Kubernetes / Networking / Namespace (Workload)
+- Kubernetes / Networking / Pod
+- Kubernetes / Networking / Workload
+- Kubernetes / Persistent Volumes
+- Node Exporter / Nodes
+- Node Exporter / USE Method / Cluster
+- Node Exporter / USE Method / Node
+- Prometheus / Overview
 - CoreDNS
+- Grafana Overview
 
 ---
 
@@ -148,7 +165,7 @@ flux reconcile helmrelease kube-prometheus-stack -n monitoring
 
 ```bash
 # Restart Grafana
-kubectl rollout restart deployment/prometheus-grafana -n monitoring
+kubectl rollout restart deployment/kube-prometheus-stack-grafana -n monitoring
 
 # Restart Prometheus (StatefulSet)
 kubectl rollout restart statefulset/prometheus-prometheus-prometheus -n monitoring
