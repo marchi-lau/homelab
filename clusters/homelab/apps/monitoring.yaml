@@ -166,9 +166,15 @@ spec:
         datasources:
           enabled: true
 
-      # Default dashboards
+      # Default dashboards (ConfigMaps)
       defaultDashboardsEnabled: true
       defaultDashboardsTimezone: Asia/Hong_Kong
+
+      # Disable built-in provider to avoid duplicate with sidecar
+      dashboardProviders:
+        dashboardproviders.yaml:
+          apiVersion: 1
+          providers: []
 
       # Service type
       service:
