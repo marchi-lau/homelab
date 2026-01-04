@@ -157,12 +157,12 @@ spec:
         dashboards:
           enabled: true
           searchNamespace: ALL
-          # Put dashboards in a folder so they show in Grafana 12 browse
           folder: /tmp/dashboards
           folderAnnotation: grafana_folder
           provider:
             foldersFromFilesStructure: false
-            folder: "Kubernetes"
+            # Empty string = General folder (root level, visible on main page)
+            folder: ""
         datasources:
           enabled: true
 
@@ -170,15 +170,14 @@ spec:
       defaultDashboardsEnabled: true
       defaultDashboardsTimezone: Asia/Hong_Kong
 
-      # Dashboard providers - ensure dashboards are visible
+      # Dashboard providers - put in General folder (root level)
       dashboardProviders:
         dashboardproviders.yaml:
           apiVersion: 1
           providers:
             - name: 'default'
               orgId: 1
-              folder: 'Kubernetes'
-              folderUid: 'kubernetes'
+              folder: ''
               type: file
               disableDeletion: false
               editable: true
