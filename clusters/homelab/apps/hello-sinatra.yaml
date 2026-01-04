@@ -1,0 +1,48 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hello-sinatra
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-sinatra
+  namespace: hello-sinatra
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-sinatra
+  template:
+    metadata:
+      labels:
+        app: hello-sinatra
+    spec:
+      containers:
+        - name: hello-sinatra
+          image: registry.k8s.io/e2e-test-images/agnhost:2.39
+          args: ["netexec", "--http-port=4567"]
+          ports:
+            - containerPort: 4567
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-sinatra
+  namespace: hello-sinatra
+spec:
+  type: NodePort
+  ports:
+    - port: 4567
+      targetPort: 4567
+      nodePort: 30567
+  selector:
+    app: hello-sinatra
