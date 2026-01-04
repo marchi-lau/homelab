@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "obsidian-homelab": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/marchi-lau/Projects/homelab/docs"]
+    }
+  }
+}
