@@ -7,6 +7,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 - [[Nodes/S740-Master|S740 Master Node]] - Implementation guide
 - [[Network/VLAN-Setup|VLAN Configuration]]
 - [[Network/Cloudflare-Tunnel|Cloudflare Tunnel Setup]]
+- [[Network/Tailscale-Operator|Tailscale Operator (Private Ingress)]]
 - [[Runbooks/Quick-Commands|Quick Commands]]
 - [[Runbooks/Flux-Commands|Flux GitOps Commands]]
 - [[Apps/n8n|n8n Workflow Automation]]
