@@ -4,9 +4,6 @@ kind: Namespace
 metadata:
   name: mcp-airtable
 ---
-# Secret 'github-token' must be created manually:
-# kubectl create secret generic github-token -n mcp-airtable --from-literal=token=<YOUR_GITHUB_TOKEN>
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,24 +19,14 @@ spec:
       labels:
         app: mcp-airtable
     spec:
+      imagePullSecrets:
+        - name: ghcr-credentials
       containers:
         - name: mcp-airtable
-          image: node:20-alpine
-          command:
-            - sh
-            - -c
-            - |
-              apk add --no-cache git &&
-              npm install -g https://${GITHUB_TOKEN}@github.com/delta-and-beta/mcp-airtable.git &&
-              node /usr/local/lib/node_modules/mcp-airtable/dist/server.js
+          image: ghcr.io/delta-and-beta/mcp-airtable:latest
           ports:
             - containerPort: 3000
           env:
-            - name: GITHUB_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: github-token
-                  key: token
             - name: PORT
               value: "3000"
             - name: NODE_ENV
