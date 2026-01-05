@@ -46,15 +46,21 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "500m"
+          startupProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 30
           readinessProbe:
             tcpSocket:
               port: 3000
-            initialDelaySeconds: 60
+            initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             tcpSocket:
               port: 3000
-            initialDelaySeconds: 90
+            initialDelaySeconds: 5
             periodSeconds: 30
 ---
 apiVersion: v1
