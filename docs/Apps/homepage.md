@@ -4,7 +4,7 @@ A highly customizable homepage/dashboard with service integrations.
 
 ## Quick Links
 
-- **URL**: https://home.marchi.app
+- **URL**: https://homepage.marchi.app
 - **GitHub**: https://github.com/gethomepage/homepage
 - **Docs**: https://gethomepage.dev
 
