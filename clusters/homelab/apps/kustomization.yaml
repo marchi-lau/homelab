@@ -11,3 +11,4 @@ resources:
   - homepage.yaml
   - ai-drawio.yaml
   - mcp-cloudflare.yaml
+  - mcp-weather.yaml

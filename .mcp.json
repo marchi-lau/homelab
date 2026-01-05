@@ -7,6 +7,10 @@
     "mcp-cloudflare": {
       "command": "npx",
       "args": ["-y", "mcp-remote", "https://mcp-cloudflare.tailb1bee0.ts.net/sse"]
+    },
+    "mcp-weather": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp-weather.tailb1bee0.ts.net/sse"]
     }
   }
 }
