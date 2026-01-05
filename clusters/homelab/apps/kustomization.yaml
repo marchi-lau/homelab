@@ -8,3 +8,4 @@ resources:
   - it-tools.yaml
   - s-pdf.yaml
   - uptime-kuma.yaml
+  - homepage.yaml
