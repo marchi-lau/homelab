@@ -36,7 +36,7 @@ spec:
             - -c
             - |
               npm install -g supergateway @cloudflare/mcp-server-cloudflare &&
-              supergateway --stdio "npx -y @cloudflare/mcp-server-cloudflare" --port 8000 --host 0.0.0.0
+              supergateway --stdio "npx -y @cloudflare/mcp-server-cloudflare run c7dea80c850b959ae89d2757244db1d0" --port 8000 --host 0.0.0.0
           ports:
             - containerPort: 8000
           env:
