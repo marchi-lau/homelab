@@ -1,0 +1,68 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: string-is
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: string-is
+  namespace: string-is
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: string-is
+  template:
+    metadata:
+      labels:
+        app: string-is
+    spec:
+      containers:
+        - name: string-is
+          image: daveperrett/string-is:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: string-is
+  namespace: string-is
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: string-is
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: string-is
+  namespace: string-is
+spec:
+  ingressClassName: cloudflare-tunnel
+  rules:
+    - host: string-is.marchi.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: string-is
+                port:
+                  number: 3000
