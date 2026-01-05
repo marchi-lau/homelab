@@ -119,3 +119,55 @@ spec:
 - Commit format: `deploy: <app>`, `remove: <app>`, `fix: <desc>`
 - Push feature branch → Create PR → Merge to main → Flux syncs
 - Use `flux reconcile kustomization apps --with-source` to force sync after merge
+
+## MCP Services
+
+MCP (Model Context Protocol) services are private and exposed only via Tailscale.
+
+### Naming Convention
+
+All MCP services MUST be prefixed with `mcp-`:
+- Namespace: `mcp-<service-name>`
+- Service: `mcp-<service-name>`
+- Ingress hostname: `mcp-<service-name>`
+
+### Ingress
+
+MCP services use **Tailscale Ingress** (private, not public):
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mcp-<service-name>
+  namespace: mcp-<service-name>
+spec:
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - mcp-<service-name>
+  rules:
+    - host: mcp-<service-name>
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mcp-<service-name>
+                port:
+                  number: <port>
+```
+
+Access URL: `https://mcp-<service-name>.<tailnet>.ts.net`
+
+### Local MCP Servers (.mcp.json)
+
+MCP servers configured in `.mcp.json` should also use `mcp-` prefix:
+- `mcp-cloudflare` - Cloudflare API (cache purge, DNS)
+- `mcp-<name>` - Other MCP servers
+
+| Ingress Type | Use Case |
+|--------------|----------|
+| `cloudflare-tunnel` | Public apps (homepage, n8n, etc.) |
+| `tailscale` | Private MCP servers |

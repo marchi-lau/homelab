@@ -3,6 +3,13 @@
     "obsidian-homelab": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/marchi-lau/Projects/homelab/docs"]
+    },
+    "mcp-cloudflare": {
+      "command": "npx",
+      "args": ["-y", "@cloudflare/mcp-server-cloudflare"],
+      "env": {
+        "CLOUDFLARE_API_TOKEN": "WaKNx-ALBhgRVWNk3or8_Ar3g7CcFRgo4tcrquF1"
+      }
     }
   }
 }
