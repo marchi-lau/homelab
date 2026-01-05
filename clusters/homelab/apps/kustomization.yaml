@@ -9,3 +9,4 @@ resources:
   - s-pdf.yaml
   - uptime-kuma.yaml
   - homepage.yaml
+  - ai-drawio.yaml
