@@ -44,7 +44,7 @@ spec:
     remediation:
       retries: 3
   # Limit Helm release history to prevent secret accumulation
-  historyLimit: 3
+  maxHistory: 3
   values:
     # ============================================
     # GLOBAL SETTINGS
