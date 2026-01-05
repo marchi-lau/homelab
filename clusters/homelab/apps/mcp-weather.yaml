@@ -22,7 +22,7 @@ spec:
       containers:
         - name: mcp-weather
           image: dog830228/mcp_weather_server:latest
-          command: ["python", "-m", "mcp_weather_server", "--mode", "sse"]
+          command: ["uv", "run", "python", "-m", "mcp_weather_server", "--mode", "sse"]
           ports:
             - containerPort: 8080
           resources:
