@@ -10,3 +10,4 @@ resources:
   - uptime-kuma.yaml
   - homepage.yaml
   - ai-drawio.yaml
+  - mcp-cloudflare.yaml
