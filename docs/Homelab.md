@@ -19,6 +19,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 - [[Apps/uptime-kuma|Uptime Kuma Status Monitoring]]
 - [[Apps/homepage|Homepage Dashboard]]
 - [[Apps/ai-drawio|AI Draw.io Diagram Editor]]
+- [[Apps/mcp-cloudflare|MCP Cloudflare (Private)]]
 
 ---
 
@@ -88,6 +89,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 | **Uptime Kuma** | https://status.marchi.app | uptime-kuma | 1Gi PVC |
 | **Homepage** | https://homepage.marchi.app | homepage | None (ConfigMap) |
 | **AI Draw.io** | https://diagram.marchi.app | ai-drawio | None (stateless) |
+| **MCP Cloudflare** | https://mcp-cloudflare.tailb1bee0.ts.net (Tailscale) | mcp-cloudflare | None (stateless) |
 
 ---
 
