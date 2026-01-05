@@ -18,7 +18,7 @@ A highly customizable homepage/dashboard with service integrations.
 | Image | `ghcr.io/gethomepage/homepage:latest` |
 | Port | 3000 |
 | Ingress | Cloudflare Tunnel |
-| Storage | ConfigMap (stateless) |
+| Storage | ConfigMap + emptyDir |
 
 ---
 
@@ -36,6 +36,7 @@ A highly customizable homepage/dashboard with service integrations.
 - **IT-Tools** - Developer Utilities
 - **Stirling PDF** - PDF Toolkit
 - **string-is** - String Toolkit
+- **AI Draw.io** - AI Diagram Editor
 
 ### Storage
 - **RustFS Console** - S3 Storage Console
@@ -56,6 +57,15 @@ Configuration is managed via ConfigMap. To update:
 
 3. Commit and push
 4. Flux will sync automatically
+
+---
+
+## Architecture Notes
+
+Homepage requires a writable `/app/config/logs` directory. Since ConfigMaps are read-only, the deployment uses:
+
+1. **initContainer** - Copies ConfigMap files to an emptyDir and creates the logs directory
+2. **emptyDir volume** - Provides writable storage for the main container
 
 ---
 
