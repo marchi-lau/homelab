@@ -1,0 +1,176 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homepage
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage-config
+  namespace: homepage
+data:
+  settings.yaml: |
+    title: Homelab Dashboard
+    favicon: https://github.com/walkxcode/dashboard-icons/blob/main/png/heimdall.png?raw=true
+    theme: dark
+    color: slate
+    headerStyle: clean
+    layout:
+      Automation:
+        style: row
+        columns: 2
+      Monitoring:
+        style: row
+        columns: 2
+      Tools:
+        style: row
+        columns: 3
+      Storage:
+        style: row
+        columns: 2
+  services.yaml: |
+    - Automation:
+        - n8n:
+            icon: n8n.png
+            href: https://n8n-02.marchi.app
+            description: Workflow Automation
+        - Uptime Kuma:
+            icon: uptime-kuma.png
+            href: https://status.marchi.app
+            description: Status Monitoring
+    - Monitoring:
+        - Grafana:
+            icon: grafana.png
+            href: https://grafana.marchi.app
+            description: Metrics Dashboard
+        - Prometheus:
+            icon: prometheus.png
+            href: https://grafana.marchi.app
+            description: Metrics Collection
+    - Tools:
+        - IT-Tools:
+            icon: it-tools.png
+            href: https://it-tools.marchi.app
+            description: Developer Utilities
+        - Stirling PDF:
+            icon: stirling-pdf.png
+            href: https://s-pdf.marchi.app
+            description: PDF Toolkit
+        - string-is:
+            icon: https://string.is/favicon.ico
+            href: https://string-is.marchi.app
+            description: String Toolkit
+    - Storage:
+        - RustFS Console:
+            icon: minio.png
+            href: https://s3-console.marchi.app
+            description: S3 Storage Console
+        - RustFS API:
+            icon: minio.png
+            href: https://s3.marchi.app
+            description: S3 API Endpoint
+  bookmarks.yaml: |
+    - Developer:
+        - GitHub:
+            - icon: github.png
+              href: https://github.com/marchi-lau/homelab
+        - Flux CD:
+            - icon: flux-cd.png
+              href: https://fluxcd.io/docs/
+    - Infrastructure:
+        - Cloudflare:
+            - icon: cloudflare.png
+              href: https://dash.cloudflare.com
+        - UniFi:
+            - icon: unifi.png
+              href: https://unifi.ui.com
+  widgets.yaml: |
+    - greeting:
+        text_size: xl
+        text: Homelab
+    - datetime:
+        text_size: l
+        format:
+          dateStyle: long
+          timeStyle: short
+          hourCycle: h23
+    - openmeteo:
+        label: Hong Kong
+        latitude: 22.3193
+        longitude: 114.1694
+        timezone: Asia/Hong_Kong
+        units: metric
+  kubernetes.yaml: |
+    mode: cluster
+  docker.yaml: ""
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homepage
+  namespace: homepage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: homepage
+  template:
+    metadata:
+      labels:
+        app: homepage
+    spec:
+      containers:
+        - name: homepage
+          image: ghcr.io/gethomepage/homepage:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: HOMEPAGE_ALLOWED_HOSTS
+              value: "home.marchi.app"
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "25m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+      volumes:
+        - name: config
+          configMap:
+            name: homepage-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: homepage
+  namespace: homepage
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: homepage
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: homepage
+  namespace: homepage
+spec:
+  ingressClassName: cloudflare-tunnel
+  rules:
+    - host: home.marchi.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: homepage
+                port:
+                  number: 3000
