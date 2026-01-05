@@ -19,14 +19,27 @@ spec:
       labels:
         app: mcp-airtable
     spec:
-      imagePullSecrets:
-        - name: ghcr-credentials
       containers:
         - name: mcp-airtable
-          image: ghcr.io/delta-and-beta/mcp-airtable:latest
+          image: node:20-alpine
+          command:
+            - sh
+            - -c
+            - |
+              apk add --no-cache git &&
+              git clone https://${GITHUB_TOKEN}@github.com/delta-and-beta/mcp-airtable.git /app &&
+              cd /app &&
+              npm install &&
+              npm run build &&
+              node dist/server.js
           ports:
             - containerPort: 3000
           env:
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-token
+                  key: token
             - name: PORT
               value: "3000"
             - name: NODE_ENV
