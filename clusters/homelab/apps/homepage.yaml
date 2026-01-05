@@ -108,6 +108,122 @@ data:
   kubernetes.yaml: |
     mode: cluster
   docker.yaml: ""
+  custom.css: |
+    /* Custom Color Scheme */
+    :root {
+      /* Primary Colors */
+      --color-midnight-blue: #001937;
+      --color-symbol-blue: #0064ff;
+      --color-sky-blue: #8bb5ff;
+
+      /* Accent Colors */
+      --color-violet-mist: #4400a2;
+      --color-fresh-meadow: #b4ffde;
+      --color-frosted-glow: #e3ffff;
+      --color-mint-cream: #e1ffd2;
+    }
+
+    /* Main background */
+    #page_container,
+    body,
+    .dark body {
+      background: linear-gradient(135deg, var(--color-midnight-blue) 0%, #002952 100%) !important;
+    }
+
+    /* Service cards */
+    .dark .service {
+      background-color: rgba(0, 25, 55, 0.8) !important;
+      border: 1px solid rgba(139, 181, 255, 0.2) !important;
+      backdrop-filter: blur(10px);
+    }
+
+    .dark .service:hover {
+      border-color: var(--color-symbol-blue) !important;
+      box-shadow: 0 4px 20px rgba(0, 100, 255, 0.3) !important;
+    }
+
+    /* Service titles and text */
+    .dark .service-title {
+      color: var(--color-sky-blue) !important;
+    }
+
+    .dark .service-description {
+      color: rgba(139, 181, 255, 0.7) !important;
+    }
+
+    /* Widget styling */
+    .dark .widget {
+      background-color: rgba(0, 25, 55, 0.6) !important;
+      border: 1px solid rgba(139, 181, 255, 0.15) !important;
+    }
+
+    /* Greeting text */
+    .dark .greeting-text {
+      color: var(--color-frosted-glow) !important;
+    }
+
+    /* Category/Group headers */
+    .dark .category-header,
+    .dark h2 {
+      color: var(--color-sky-blue) !important;
+    }
+
+    /* Links */
+    .dark a:hover {
+      color: var(--color-symbol-blue) !important;
+    }
+
+    /* Bookmark groups */
+    .dark .bookmark-group {
+      background-color: rgba(0, 25, 55, 0.5) !important;
+      border: 1px solid rgba(139, 181, 255, 0.1) !important;
+    }
+
+    /* Status indicators - success */
+    .dark .status-success,
+    .dark .text-green-500 {
+      color: var(--color-fresh-meadow) !important;
+    }
+
+    /* Buttons and interactive elements */
+    .dark button:hover,
+    .dark .btn:hover {
+      background-color: var(--color-symbol-blue) !important;
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--color-midnight-blue);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--color-symbol-blue);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--color-sky-blue);
+    }
+
+    /* Tab/section styling */
+    .dark .tab-active {
+      border-color: var(--color-symbol-blue) !important;
+      color: var(--color-symbol-blue) !important;
+    }
+
+    /* Weather widget */
+    .dark .weather-current {
+      color: var(--color-frosted-glow) !important;
+    }
+
+    /* Date/time widget */
+    .dark .datetime {
+      color: var(--color-sky-blue) !important;
+    }
 ---
 apiVersion: apps/v1
 kind: Deployment
