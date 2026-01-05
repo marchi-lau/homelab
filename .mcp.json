@@ -6,10 +6,7 @@
     },
     "mcp-cloudflare": {
       "command": "npx",
-      "args": ["-y", "@cloudflare/mcp-server-cloudflare"],
-      "env": {
-        "CLOUDFLARE_API_TOKEN": "WaKNx-ALBhgRVWNk3or8_Ar3g7CcFRgo4tcrquF1"
-      }
+      "args": ["-y", "mcp-remote", "https://mcp-cloudflare.tailb1bee0.ts.net/sse"]
     }
   }
 }

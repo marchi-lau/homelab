@@ -45,7 +45,7 @@ Supergateway bridges the stdio-based Cloudflare MCP server to HTTP/SSE transport
 
 ## Claude Code Configuration
 
-Update `.mcp.json` to use the remote server:
+The `.mcp.json` is already configured to use the remote server:
 
 ```json
 {
@@ -57,6 +57,8 @@ Update `.mcp.json` to use the remote server:
   }
 }
 ```
+
+**Note:** Requires Tailscale connection to access the MCP server.
 
 ---
 
