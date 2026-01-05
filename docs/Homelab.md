@@ -12,6 +12,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 - [[Apps/n8n|n8n Workflow Automation]]
 - [[Apps/rustfs|RustFS S3 Storage]]
 - [[Apps/Monitoring|Prometheus + Grafana Monitoring]]
+- [[Apps/string-is|string-is String Toolkit]]
 
 ---
 
@@ -75,6 +76,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 | **n8n** | https://n8n-02.marchi.app | n8n | 5Gi PVC |
 | **RustFS** | https://s3.marchi.app (API) / https://s3-console.marchi.app (Console) | rustfs | 10Gi PVC |
 | **Grafana** | https://grafana.marchi.app | monitoring | 5Gi (Prometheus) + 1Gi (Grafana) |
+| **string-is** | https://string-is.marchi.app | string-is | None (stateless) |
 
 ---
 
@@ -142,6 +144,7 @@ Services are exposed via Cloudflare Tunnel Ingress Controller. No open ports req
 | s3.marchi.app | rustfs:9000 | rustfs |
 | s3-console.marchi.app | rustfs:9001 | rustfs |
 | grafana.marchi.app | kube-prometheus-stack-grafana:80 | monitoring |
+| string-is.marchi.app | string-is:3000 | string-is |
 
 To expose a new service, add an Ingress:
 
