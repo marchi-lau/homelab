@@ -6,3 +6,4 @@ resources:
   - monitoring.yaml
   - string-is.yaml
   - it-tools.yaml
+  - s-pdf.yaml
