@@ -5,3 +5,4 @@ resources:
   - rustfs.yaml
   - monitoring.yaml
   - string-is.yaml
+  - it-tools.yaml
