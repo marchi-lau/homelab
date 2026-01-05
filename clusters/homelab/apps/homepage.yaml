@@ -145,7 +145,7 @@ spec:
             - containerPort: 3000
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS
-              value: "home.marchi.app"
+              value: "homepage.marchi.app"
           volumeMounts:
             - name: config
               mountPath: /app/config
@@ -184,7 +184,7 @@ metadata:
 spec:
   ingressClassName: cloudflare-tunnel
   rules:
-    - host: home.marchi.app
+    - host: homepage.marchi.app
       http:
         paths:
           - path: /

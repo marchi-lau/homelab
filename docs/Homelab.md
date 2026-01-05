@@ -85,7 +85,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 | **IT-Tools** | https://it-tools.marchi.app | it-tools | None (stateless) |
 | **Stirling PDF** | https://s-pdf.marchi.app | s-pdf | None (stateless) |
 | **Uptime Kuma** | https://status.marchi.app | uptime-kuma | 1Gi PVC |
-| **Homepage** | https://home.marchi.app | homepage | None (ConfigMap) |
+| **Homepage** | https://homepage.marchi.app | homepage | None (ConfigMap) |
 | **AI Draw.io** | https://diagram.marchi.app | ai-drawio | None (stateless) |
 
 ---
@@ -158,7 +158,7 @@ Services are exposed via Cloudflare Tunnel Ingress Controller. No open ports req
 | it-tools.marchi.app | it-tools:80 | it-tools |
 | s-pdf.marchi.app | s-pdf:8080 | s-pdf |
 | status.marchi.app | uptime-kuma:3001 | uptime-kuma |
-| home.marchi.app | homepage:3000 | homepage |
+| homepage.marchi.app | homepage:3000 | homepage |
 | diagram.marchi.app | ai-drawio:3000 | ai-drawio |
 
 To expose a new service, add an Ingress:
