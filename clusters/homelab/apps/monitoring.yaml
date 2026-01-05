@@ -28,7 +28,7 @@ spec:
   chart:
     spec:
       chart: kube-prometheus-stack
-      version: "72.x"
+      version: "72.9.1"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
@@ -40,12 +40,17 @@ spec:
       retries: 3
   upgrade:
     crds: CreateReplace
+    cleanupOnFail: true
     remediation:
       retries: 3
+  # Limit Helm release history to prevent secret accumulation
+  historyLimit: 3
   values:
     # ============================================
     # GLOBAL SETTINGS
     # ============================================
+    # Note: fullnameOverride only affects Prometheus resources, not subcharts
+    # Grafana service remains "kube-prometheus-stack-grafana"
     fullnameOverride: prometheus
 
     # ============================================

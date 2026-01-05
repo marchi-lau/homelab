@@ -9,7 +9,7 @@ Prometheus + Grafana monitoring for the K3s homelab cluster.
 | **Grafana URL** | https://grafana.marchi.app |
 | **Namespace** | monitoring |
 | **Helm Chart** | kube-prometheus-stack |
-| **Chart Version** | 72.x |
+| **Chart Version** | 72.9.1 |
 | **Prometheus Storage** | 5Gi PVC |
 | **Grafana Storage** | 1Gi PVC |
 | **Retention** | 7 days |
@@ -236,7 +236,7 @@ kubectl describe helmrelease kube-prometheus-stack -n monitoring
 ## Upgrade Chart Version
 
 1. Edit `clusters/homelab/apps/monitoring.yaml`
-2. Change `version: "72.x"` to desired version
+2. Change `version: "72.9.1"` to desired version
 3. Commit and push
 4. Sync: `flux reconcile kustomization apps --with-source`
 
