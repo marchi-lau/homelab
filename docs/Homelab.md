@@ -14,6 +14,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 - [[Apps/Monitoring|Prometheus + Grafana Monitoring]]
 - [[Apps/string-is|string-is String Toolkit]]
 - [[Apps/it-tools|IT-Tools Developer Toolkit]]
+- [[Apps/s-pdf|Stirling PDF Toolkit]]
 
 ---
 
@@ -79,6 +80,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 | **Grafana** | https://grafana.marchi.app | monitoring | 5Gi (Prometheus) + 1Gi (Grafana) |
 | **string-is** | https://string-is.marchi.app | string-is | None (stateless) |
 | **IT-Tools** | https://it-tools.marchi.app | it-tools | None (stateless) |
+| **Stirling PDF** | https://s-pdf.marchi.app | s-pdf | None (stateless) |
 
 ---
 
@@ -148,6 +150,7 @@ Services are exposed via Cloudflare Tunnel Ingress Controller. No open ports req
 | grafana.marchi.app | kube-prometheus-stack-grafana:80 | monitoring |
 | string-is.marchi.app | string-is:3000 | string-is |
 | it-tools.marchi.app | it-tools:80 | it-tools |
+| s-pdf.marchi.app | s-pdf:8080 | s-pdf |
 
 To expose a new service, add an Ingress:
 
