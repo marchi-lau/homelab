@@ -12,3 +12,4 @@ resources:
   - ai-drawio.yaml
   - mcp-cloudflare.yaml
   - mcp-weather.yaml
+  - mcp-airtable.yaml
