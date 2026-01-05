@@ -114,6 +114,8 @@ spec:
 
 ## Git Workflow
 
+- **Use plan mode** for new service deployments to improve accuracy
+- **Create feature branches** for new services: `feature/<service-name>`
 - Commit format: `deploy: <app>`, `remove: <app>`, `fix: <desc>`
-- Always push for Flux to sync
-- Use `flux reconcile kustomization apps --with-source` to force sync
+- Push feature branch → Create PR → Merge to main → Flux syncs
+- Use `flux reconcile kustomization apps --with-source` to force sync after merge

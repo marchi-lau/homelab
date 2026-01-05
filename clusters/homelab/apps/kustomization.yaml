@@ -4,3 +4,4 @@ resources:
   - n8n.yaml
   - rustfs.yaml
   - monitoring.yaml
+  - string-is.yaml
