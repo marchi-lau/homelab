@@ -11,6 +11,8 @@ metadata:
   namespace: mcp-airtable
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: mcp-airtable
@@ -19,6 +21,17 @@ spec:
       labels:
         app: mcp-airtable
     spec:
+      # Prefer scheduling on worker node (Synology VM)
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - k3s-node-01
       containers:
         - name: mcp-airtable
           image: node:20-alpine
@@ -41,17 +54,17 @@ spec:
               value: "production"
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "50m"
+              memory: "256Mi"
+              cpu: "100m"
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "1Gi"
+              cpu: "1000m"
           startupProbe:
             tcpSocket:
               port: 3000
-            initialDelaySeconds: 10
+            initialDelaySeconds: 60
             periodSeconds: 10
-            failureThreshold: 30
+            failureThreshold: 90
           readinessProbe:
             tcpSocket:
               port: 3000
