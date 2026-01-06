@@ -4,12 +4,14 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 
 ## Quick Links
 
-- [[Nodes/S740-Master|S740 Master Node]] - Implementation guide
+- [[Nodes/S740-Master|S740 Master Node]] - Control plane implementation
+- [[Nodes/Synology-Worker|Synology Worker Node]] - Worker node on DS1821+ VM
 - [[Network/VLAN-Setup|VLAN Configuration]]
 - [[Network/Cloudflare-Tunnel|Cloudflare Tunnel Setup]]
 - [[Network/Tailscale-Operator|Tailscale Operator (Private Ingress)]]
 - [[Runbooks/Quick-Commands|Quick Commands]]
 - [[Runbooks/Flux-Commands|Flux GitOps Commands]]
+- [[Runbooks/Add-Synology-Worker|Add Worker Node Runbook]]
 - [[Apps/n8n|n8n Workflow Automation]]
 - [[Apps/rustfs|RustFS S3 Storage]]
 - [[Apps/Monitoring|Prometheus + Grafana Monitoring]]
@@ -26,38 +28,46 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 ## Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────────────────┐
-│  Internet                                                                │
-│      │                                                                   │
-│      ▼                                                                   │
-│  ┌──────────────────────┐                                                │
-│  │   Cloudflare Edge    │  ◄── WAF, DDoS protection, SSL                │
-│  │  n8n-02.marchi.app   │                                                │
-│  └──────────┬───────────┘                                                │
-│             │ Encrypted tunnel (outbound only)                           │
-│             ▼                                                            │
-│  ┌──────────────────────────────────────────────────────────────────┐    │
-│  │                   Homelab Network (VLAN 10)                      │    │
-│  │                       10.10.10.0/24                              │    │
-│  │                                                                  │    │
-│  │   ┌─────────────────┐       ┌──────────────────────────────────┐│    │
-│  │   │  S740 Master    │       │     Synology DS1821+ (Future)   ││    │
-│  │   │  10.10.10.10    │       │                                  ││    │
-│  │   │                 │       │  ⏳ VM Worker: 10.10.10.20       ││    │
-│  │   │  ✅ K3s Server  │       │  ⏳ NFS Storage: 10.10.10.50     ││    │
-│  │   │  ✅ Flux GitOps │       │     64GB RAM                     ││    │
-│  │   │  ✅ CF Tunnel   │       │                                  ││    │
-│  │   │  ✅ n8n         │       └──────────────────────────────────┘│    │
-│  │   └────────┬────────┘                                           │    │
-│  │            │                                                    │    │
-│  │            ▼                                                    │    │
-│  │   ┌─────────────────┐                                           │    │
-│  │   │  GitHub Repo    │◄──── Flux syncs every 10m                 │    │
-│  │   │  marchi-lau/    │                                           │    │
-│  │   │  homelab        │                                           │    │
-│  │   └─────────────────┘                                           │    │
-│  └──────────────────────────────────────────────────────────────────┘    │
-└──────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│  Internet                                                                        │
+│      │                                                                           │
+│      ▼                                                                           │
+│  ┌──────────────────────┐                                                        │
+│  │   Cloudflare Edge    │  ◄── WAF, DDoS protection, SSL                        │
+│  │  *.marchi.app        │                                                        │
+│  └──────────┬───────────┘                                                        │
+│             │ Encrypted tunnel (outbound only)                                   │
+│             ▼                                                                    │
+│  ┌────────────────────────────────────────────────────────────────────────────┐  │
+│  │                        Homelab Network (VLAN 10)                           │  │
+│  │                            10.10.10.0/24                                   │  │
+│  │                                                                            │  │
+│  │  ┌──────────────────┐         ┌────────────────────────────────────────┐   │  │
+│  │  │  S740 (Master)   │         │        Synology DS1821+ (10.10.10.100) │   │  │
+│  │  │  10.10.10.10     │         │                                        │   │  │
+│  │  │                  │         │  ┌────────────────────────────────┐    │   │  │
+│  │  │  ✅ K3s Server   │◄───────►│  │  Ubuntu VM (Worker)            │    │   │  │
+│  │  │  ✅ Control Plane│  K3s    │  │  k3s-node-01 / 10.10.10.20     │    │   │  │
+│  │  │  ✅ Flux GitOps  │  API    │  │                                │    │   │  │
+│  │  │  ✅ CF Tunnel    │         │  │  ✅ K3s Agent                  │    │   │  │
+│  │  │                  │         │  │  ✅ 4 vCPU, 24GB RAM           │    │   │  │
+│  │  │                  │         │  │  ✅ NFS CSI node driver        │    │   │  │
+│  │  │                  │         │  └───────────┬────────────────────┘    │   │  │
+│  │  │                  │         │              │ NFS v4.1                │   │  │
+│  │  │                  │         │  ┌───────────▼────────────────────┐    │   │  │
+│  │  │                  │         │  │  /volume3/k3s-data             │    │   │  │
+│  │  │                  │         │  │  synology-nfs StorageClass     │    │   │  │
+│  │  │                  │         │  └────────────────────────────────┘    │   │  │
+│  │  └────────┬─────────┘         └────────────────────────────────────────┘   │  │
+│  │           │                                                                │  │
+│  │           ▼                                                                │  │
+│  │  ┌─────────────────┐                                                       │  │
+│  │  │  GitHub Repo    │◄──── Flux syncs every 10m                             │  │
+│  │  │  marchi-lau/    │                                                       │  │
+│  │  │  homelab        │                                                       │  │
+│  │  └─────────────────┘                                                       │  │
+│  └────────────────────────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -66,13 +76,13 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **S740 Master** | ✅ Running | K3s v1.34.3, 10.10.10.10 |
+| **S740 Master** | ✅ Running | K3s v1.34.3, 10.10.10.10, control-plane |
+| **Synology Worker** | ✅ Running | K3s v1.34.3, 10.10.10.20, k3s-node-01 |
 | **Flux GitOps** | ✅ Running | v2.7.5, syncing from GitHub |
 | **Cloudflare Tunnel** | ✅ Running | Ingress controller + cloudflared |
+| **NFS Storage** | ✅ Running | synology-nfs StorageClass, 10.10.10.100:/volume3/k3s-data |
 | **n8n** | ✅ Running | https://n8n-02.marchi.app |
 | **GitHub Repo** | ✅ Active | [marchi-lau/homelab](https://github.com/marchi-lau/homelab) |
-| Synology Worker | ⏳ Planned | VM on DS1821+ |
-| NFS Storage | ⏳ Planned | Synology share |
 
 ---
 
@@ -202,6 +212,7 @@ spec:
 
 ## Implementation Progress
 
+### Phase 1: Core Infrastructure ✅
 - [x] UniFi VLAN "Homelab" (10.10.10.0/24)
 - [x] S740 Ubuntu 24.04.1 LTS installation
 - [x] Static IP configuration (10.10.10.10)
@@ -217,9 +228,20 @@ spec:
 - [x] Cloudflare Tunnel Ingress Controller
 - [x] n8n deployment
 - [x] Prometheus + Grafana monitoring stack (Helm)
+
+### Phase 2: Synology Worker Node ✅
+- [x] Synology DS1821+ NFS share (/volume3/k3s-data)
+- [x] Ubuntu 24.04 VM in VMM (4 vCPU, 24GB RAM)
+- [x] VM static IP configuration (10.10.10.20)
+- [x] SSH agent sudo on worker
+- [x] K3s agent joined to cluster
+- [x] NFS CSI driver installed
+- [x] synology-nfs StorageClass created and tested
+
+### Phase 3: Future
 - [ ] Cloudflare WAF bypass rule
-- [ ] Synology VM worker node
-- [ ] NFS StorageClass
+- [ ] High availability (multiple masters)
+- [ ] Backup automation
 
 ---
 
@@ -249,10 +271,11 @@ homelab/
 
 ## Hardware Inventory
 
-| Device | Model | RAM | Role | Status |
-|--------|-------|-----|------|--------|
-| S740 | Fujitsu S740 | 4GB | K3s Master | ✅ Running |
-| Synology | DS1821+ | 64GB | Worker + Storage | ⏳ Planned |
+| Device | Model | RAM | Role | IP | Status |
+|--------|-------|-----|------|-----|--------|
+| S740 | Fujitsu S740 | 4GB | K3s Master | 10.10.10.10 | ✅ Running |
+| Synology | DS1821+ | 64GB | NAS + VM Host | 10.10.10.100 | ✅ Running |
+| k3s-node-01 | VM on DS1821+ | 24GB | K3s Worker | 10.10.10.20 | ✅ Running |
 
 ---
 
@@ -270,13 +293,14 @@ homelab/
 
 ## Related
 
-- [[Nodes/S740-Master|S740 Implementation Guide]]
+- [[Nodes/S740-Master|S740 Master Node]]
+- [[Nodes/Synology-Worker|Synology Worker Node]]
 - [[Network/VLAN-Setup|VLAN Configuration]]
 - [[Network/Cloudflare-Tunnel|Cloudflare Tunnel Setup]]
 - [[Apps/n8n|n8n App]]
 - [[Runbooks/Quick-Commands|Quick Commands]]
 - [[Runbooks/Flux-Commands|Flux Commands]]
-- [[Nodes/Synology-Worker|Synology Worker (Planned)]]
+- [[Runbooks/Add-Synology-Worker|Add Worker Node Runbook]]
 
 ## Tags
 
