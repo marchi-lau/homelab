@@ -41,17 +41,17 @@ spec:
               value: "production"
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "50m"
+              memory: "256Mi"
+              cpu: "100m"
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "1Gi"
+              cpu: "1000m"
           startupProbe:
             tcpSocket:
               port: 3000
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 10
-            failureThreshold: 30
+            failureThreshold: 60
           readinessProbe:
             tcpSocket:
               port: 3000
