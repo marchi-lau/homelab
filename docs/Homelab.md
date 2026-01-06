@@ -90,7 +90,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 
 | App | URL | Namespace | Node | Storage |
 |-----|-----|-----------|------|---------|
-| **n8n** | https://n8n-02.marchi.app | n8n | Master | 5Gi PVC |
+| **n8n** | https://n8n-02.marchi.app | n8n | Any | 5Gi NFS |
 | **RustFS** | https://s3.marchi.app / https://s3-console.marchi.app | rustfs | Any | 10Gi NFS |
 | **Grafana** | https://grafana.marchi.app | monitoring | Worker | 1Gi PVC |
 | **Prometheus** | (internal) | monitoring | Master | 5Gi PVC |
