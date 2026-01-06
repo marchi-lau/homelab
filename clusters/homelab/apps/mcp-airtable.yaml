@@ -43,7 +43,7 @@ spec:
               git clone https://github.com/delta-and-beta/mcp-airtable.git /app &&
               cd /app &&
               sed -i 's/"fastmcp": "[^"]*"/"fastmcp": "^1.6.0"/' package.json &&
-              npm install &&
+              npm install --include=dev &&
               npm run build &&
               npm start
           ports:
