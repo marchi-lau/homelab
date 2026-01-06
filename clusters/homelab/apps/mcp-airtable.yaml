@@ -66,21 +66,18 @@ spec:
               memory: "512Mi"
               cpu: "500m"
           startupProbe:
-            httpGet:
-              path: /mcp
+            tcpSocket:
               port: 3000
-            initialDelaySeconds: 90
-            periodSeconds: 10
+            initialDelaySeconds: 60
+            periodSeconds: 5
             failureThreshold: 30
           readinessProbe:
-            httpGet:
-              path: /mcp
+            tcpSocket:
               port: 3000
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
-            httpGet:
-              path: /mcp
+            tcpSocket:
               port: 3000
             initialDelaySeconds: 5
             periodSeconds: 30
