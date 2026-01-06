@@ -135,6 +135,18 @@ spec:
     grafana:
       enabled: true
 
+      # Schedule on worker node (Synology VM)
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - k3s-node-01
+
       # Admin credentials (change on first login!)
       adminUser: admin
       adminPassword: admin
