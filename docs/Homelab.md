@@ -88,18 +88,20 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 
 ## Deployed Apps
 
-| App | URL | Namespace | Storage |
-|-----|-----|-----------|---------|
-| **n8n** | https://n8n-02.marchi.app | n8n | 5Gi PVC |
-| **RustFS** | https://s3.marchi.app (API) / https://s3-console.marchi.app (Console) | rustfs | 10Gi PVC |
-| **Grafana** | https://grafana.marchi.app | monitoring | 5Gi (Prometheus) + 1Gi (Grafana) |
-| **string-is** | https://string-is.marchi.app | string-is | None (stateless) |
-| **IT-Tools** | https://it-tools.marchi.app | it-tools | None (stateless) |
-| **Stirling PDF** | https://s-pdf.marchi.app | s-pdf | None (stateless) |
-| **Uptime Kuma** | https://status.marchi.app | uptime-kuma | 1Gi PVC |
-| **Homepage** | https://homepage.marchi.app | homepage | None (ConfigMap) |
-| **AI Draw.io** | https://diagram.marchi.app | ai-drawio | None (stateless) |
-| **MCP Cloudflare** | https://mcp-cloudflare.tailb1bee0.ts.net (Tailscale) | mcp-cloudflare | None (stateless) |
+| App | URL | Namespace | Node | Storage |
+|-----|-----|-----------|------|---------|
+| **n8n** | https://n8n-02.marchi.app | n8n | Master | 5Gi PVC |
+| **RustFS** | https://s3.marchi.app / https://s3-console.marchi.app | rustfs | Master | 10Gi PVC |
+| **Grafana** | https://grafana.marchi.app | monitoring | Worker | 1Gi PVC |
+| **Prometheus** | (internal) | monitoring | Master | 5Gi PVC |
+| **string-is** | https://string-is.marchi.app | string-is | Any | None |
+| **IT-Tools** | https://it-tools.marchi.app | it-tools | Any | None |
+| **Stirling PDF** | https://s-pdf.marchi.app | s-pdf | Any | None |
+| **Uptime Kuma** | https://status.marchi.app | uptime-kuma | Master | 1Gi PVC |
+| **Homepage** | https://homepage.marchi.app | homepage | Any | None |
+| **AI Draw.io** | https://diagram.marchi.app | ai-drawio | Any | None |
+| **MCP Cloudflare** | https://mcp-cloudflare.tailb1bee0.ts.net | mcp-cloudflare | Any | None |
+| **MCP Airtable** | https://mcp-airtable.tailb1bee0.ts.net | mcp-airtable | Worker | None |
 
 ---
 
