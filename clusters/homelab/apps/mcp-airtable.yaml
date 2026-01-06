@@ -42,9 +42,9 @@ spec:
               apk add --no-cache git &&
               git clone https://github.com/delta-and-beta/mcp-airtable.git /app &&
               cd /app &&
-              npm install --include=dev &&
+              npm install &&
               npm run build &&
-              node dist/server.js
+              npm start
           ports:
             - containerPort: 3000
           env:
@@ -52,28 +52,29 @@ spec:
               value: "3000"
             - name: NODE_ENV
               value: "production"
-            - name: NODE_OPTIONS
-              value: "--max-old-space-size=1536"
           resources:
             requests:
-              memory: "512Mi"
+              memory: "256Mi"
               cpu: "100m"
             limits:
-              memory: "2Gi"
-              cpu: "1000m"
+              memory: "512Mi"
+              cpu: "500m"
           startupProbe:
-            tcpSocket:
+            httpGet:
+              path: /mcp
               port: 3000
             initialDelaySeconds: 60
             periodSeconds: 10
-            failureThreshold: 90
+            failureThreshold: 30
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /mcp
               port: 3000
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /mcp
               port: 3000
             initialDelaySeconds: 5
             periodSeconds: 30
