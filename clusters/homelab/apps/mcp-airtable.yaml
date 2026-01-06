@@ -39,14 +39,8 @@ spec:
             - sh
             - -c
             - |
-              apk add --no-cache git &&
-              git clone https://github.com/delta-and-beta/mcp-airtable.git /app &&
-              cd /app &&
-              sed -i 's/"fastmcp": "[^"]*"/"fastmcp": "^1.6.0"/' package.json &&
-              sed -i 's/stateless: false/endpoint: "\/mcp"/' src/server.ts &&
-              npm install --include=dev &&
-              npm run build &&
-              npm start
+              npm install -g mcp-proxy airtable-mcp-server &&
+              mcp-proxy --port 3000 -- airtable-mcp-server
           ports:
             - containerPort: 3000
           env:
@@ -56,27 +50,24 @@ spec:
               value: "production"
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "100m"
+              memory: "128Mi"
+              cpu: "50m"
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "256Mi"
+              cpu: "200m"
           startupProbe:
-            httpGet:
-              path: /mcp
+            tcpSocket:
               port: 3000
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            failureThreshold: 30
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            failureThreshold: 20
           readinessProbe:
-            httpGet:
-              path: /mcp
+            tcpSocket:
               port: 3000
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
-            httpGet:
-              path: /mcp
+            tcpSocket:
               port: 3000
             initialDelaySeconds: 5
             periodSeconds: 30
