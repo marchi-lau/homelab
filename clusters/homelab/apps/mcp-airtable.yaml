@@ -47,7 +47,7 @@ spec:
               # Fix API change: stateless -> endpoint
               sed -i 's/stateless: false/endpoint: "\/mcp"/' src/server.ts &&
               # Fix circular import: use dynamic imports for tools
-              sed -i 's/^import "\.\/tools\/\(.*\)";$/const _ = await import(".\/tools\/\1");/' src/server.ts &&
+              sed -i 's/^import "\.\/tools\/\(.*\)";$/await import(".\/tools\/\1");/' src/server.ts &&
               npm install --include=dev &&
               npm run build &&
               npm start
