@@ -35,6 +35,9 @@ rules:
   - apiGroups: ["source.toolkit.fluxcd.io"]
     resources: ["gitrepositories"]
     verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "create", "patch", "update"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -75,15 +78,19 @@ spec:
                   # Revision format: main@sha1:4c2c7e76dc152395be11dc39a13543903f11167f
                   UPSTREAM_REV=$(kubectl get gitrepository mcp-airtable-upstream -n mcp-airtable -o jsonpath='{.status.artifact.revision}' | cut -d':' -f2 | cut -c1-7)
 
-                  # Get current deployment annotation
-                  DEPLOY_REV=$(kubectl get deployment mcp-airtable -n mcp-airtable -o jsonpath='{.spec.template.metadata.annotations.upstream-revision}' 2>/dev/null || echo "none")
+                  # Get deployed revision from ConfigMap (not affected by Flux)
+                  DEPLOY_REV=$(kubectl get configmap mcp-airtable-revision -n mcp-airtable -o jsonpath='{.data.revision}' 2>/dev/null || echo "none")
 
-                  echo "Upstream: $UPSTREAM_REV, Deployment: $DEPLOY_REV"
+                  echo "Upstream: $UPSTREAM_REV, Deployed: $DEPLOY_REV"
 
                   if [ "$UPSTREAM_REV" != "$DEPLOY_REV" ] && [ -n "$UPSTREAM_REV" ]; then
                     echo "New version detected, restarting deployment..."
-                    kubectl patch deployment mcp-airtable -n mcp-airtable \
-                      -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"upstream-revision\":\"$UPSTREAM_REV\"}}}}}"
+                    # Update ConfigMap with new revision
+                    kubectl create configmap mcp-airtable-revision -n mcp-airtable \
+                      --from-literal=revision=$UPSTREAM_REV \
+                      --dry-run=client -o yaml | kubectl apply -f -
+                    # Restart deployment
+                    kubectl rollout restart deployment/mcp-airtable -n mcp-airtable
                   else
                     echo "No changes detected"
                   fi
