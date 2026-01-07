@@ -11,6 +11,14 @@
     "mcp-weather": {
       "command": "npx",
       "args": ["-y", "mcp-remote", "https://mcp-weather.tailb1bee0.ts.net/sse"]
+    },
+    "mcp-airtable": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp-airtable.tailb1bee0.ts.net/mcp"
+      ]
     }
   }
 }

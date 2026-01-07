@@ -42,7 +42,7 @@ spec:
               git clone https://github.com/delta-and-beta/mcp-airtable.git /app &&
               cd /app &&
               npm install &&
-              npx tsc --skipLibCheck &&
+              ./node_modules/.bin/tsc --skipLibCheck &&
               npm start
           ports:
             - containerPort: 3000
