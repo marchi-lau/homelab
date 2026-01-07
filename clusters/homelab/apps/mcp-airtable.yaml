@@ -41,10 +41,8 @@ spec:
               apk add --no-cache git &&
               git clone https://github.com/delta-and-beta/mcp-airtable.git /app &&
               cd /app &&
-              # Patch server to bind to 0.0.0.0 for k8s
-              sed -i 's/httpStream: {/httpStream: { host: "0.0.0.0",/' src/server.ts &&
-              npm install --include=dev &&
-              ./node_modules/.bin/tsc --skipLibCheck &&
+              npm install &&
+              npm run build &&
               npm start
           ports:
             - containerPort: 3000
