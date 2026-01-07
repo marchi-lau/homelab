@@ -72,7 +72,8 @@ spec:
                 - -c
                 - |
                   # Get current upstream commit from GitRepository
-                  UPSTREAM_REV=$(kubectl get gitrepository mcp-airtable-upstream -n mcp-airtable -o jsonpath='{.status.artifact.revision}' | cut -d'/' -f2 | cut -c1-7)
+                  # Revision format: main@sha1:4c2c7e76dc152395be11dc39a13543903f11167f
+                  UPSTREAM_REV=$(kubectl get gitrepository mcp-airtable-upstream -n mcp-airtable -o jsonpath='{.status.artifact.revision}' | cut -d':' -f2 | cut -c1-7)
 
                   # Get current deployment annotation
                   DEPLOY_REV=$(kubectl get deployment mcp-airtable -n mcp-airtable -o jsonpath='{.spec.template.metadata.annotations.upstream-revision}' 2>/dev/null || echo "none")
