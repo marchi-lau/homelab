@@ -21,7 +21,6 @@ spec:
       labels:
         app: mcp-airtable
     spec:
-      # Prefer scheduling on worker node (Synology VM)
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -42,14 +41,8 @@ spec:
               apk add --no-cache git &&
               git clone https://github.com/delta-and-beta/mcp-airtable.git /app &&
               cd /app &&
-              # Fix fastmcp version (0.1.8 doesn't exist, use 1.6.0)
-              sed -i 's/"fastmcp": "[^"]*"/"fastmcp": "^1.6.0"/' package.json &&
-              # Fix API change: stateless -> endpoint
-              sed -i 's/stateless: false/endpoint: "\/mcp"/' src/server.ts &&
-              # Fix circular import: use dynamic imports for tools
-              sed -i 's/^import "\.\/tools\/\(.*\)";$/await import(".\/tools\/\1");/' src/server.ts &&
-              npm install --include=dev &&
-              npm run build &&
+              npm install &&
+              npx tsc --skipLibCheck &&
               npm start
           ports:
             - containerPort: 3000
@@ -68,7 +61,7 @@ spec:
           startupProbe:
             tcpSocket:
               port: 3000
-            initialDelaySeconds: 60
+            initialDelaySeconds: 90
             periodSeconds: 5
             failureThreshold: 30
           readinessProbe:
