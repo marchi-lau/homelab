@@ -171,3 +171,14 @@ MCP servers configured in `.mcp.json` should also use `mcp-` prefix:
 |--------------|----------|
 | `cloudflare-tunnel` | Public apps (homepage, n8n, etc.) |
 | `tailscale` | Private MCP servers |
+
+### MCP Client Configuration Rules
+
+When configuring MCP clients in Claude Desktop or Claude Code (`.mcp.json`):
+
+**ONLY change the domain/URL information.** Do NOT modify:
+- Transport mechanism (e.g., `mcp-remote`, `supergateway`)
+- Command structure or arguments format
+- Header configuration patterns
+
+Copy existing working configurations and only update the endpoint URL.
