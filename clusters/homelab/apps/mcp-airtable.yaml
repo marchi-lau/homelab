@@ -4,6 +4,90 @@ kind: Namespace
 metadata:
   name: mcp-airtable
 ---
+# Watch upstream repo for changes (every 5 min)
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: mcp-airtable-upstream
+  namespace: mcp-airtable
+spec:
+  interval: 5m
+  url: https://github.com/delta-and-beta/mcp-airtable
+  ref:
+    branch: main
+---
+# ServiceAccount for the restart job
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: deployment-restarter
+  namespace: mcp-airtable
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: deployment-restarter
+  namespace: mcp-airtable
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "patch"]
+  - apiGroups: ["source.toolkit.fluxcd.io"]
+    resources: ["gitrepositories"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: deployment-restarter
+  namespace: mcp-airtable
+subjects:
+  - kind: ServiceAccount
+    name: deployment-restarter
+    namespace: mcp-airtable
+roleRef:
+  kind: Role
+  name: deployment-restarter
+  apiGroup: rbac.authorization.k8s.io
+---
+# CronJob to check for upstream changes and restart if needed
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mcp-airtable-auto-update
+  namespace: mcp-airtable
+spec:
+  schedule: "*/5 * * * *"  # Every 5 minutes
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: deployment-restarter
+          containers:
+            - name: restarter
+              image: bitnami/kubectl:latest
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  # Get current upstream commit from GitRepository
+                  UPSTREAM_REV=$(kubectl get gitrepository mcp-airtable-upstream -n mcp-airtable -o jsonpath='{.status.artifact.revision}' | cut -d'/' -f2 | cut -c1-7)
+
+                  # Get current deployment annotation
+                  DEPLOY_REV=$(kubectl get deployment mcp-airtable -n mcp-airtable -o jsonpath='{.spec.template.metadata.annotations.upstream-revision}' 2>/dev/null || echo "none")
+
+                  echo "Upstream: $UPSTREAM_REV, Deployment: $DEPLOY_REV"
+
+                  if [ "$UPSTREAM_REV" != "$DEPLOY_REV" ] && [ -n "$UPSTREAM_REV" ]; then
+                    echo "New version detected, restarting deployment..."
+                    kubectl patch deployment mcp-airtable -n mcp-airtable \
+                      -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"upstream-revision\":\"$UPSTREAM_REV\"}}}}}"
+                  else
+                    echo "No changes detected"
+                  fi
+          restartPolicy: OnFailure
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,6 +104,8 @@ spec:
     metadata:
       labels:
         app: mcp-airtable
+      annotations:
+        upstream-revision: "initial"
     spec:
       affinity:
         nodeAffinity:
