@@ -41,7 +41,7 @@ spec:
               apk add --no-cache git &&
               git clone https://github.com/delta-and-beta/mcp-airtable.git /app &&
               cd /app &&
-              npm install &&
+              npm install --include=dev &&
               ./node_modules/.bin/tsc --skipLibCheck &&
               npm start
           ports:
