@@ -16,8 +16,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "supergateway",
-        "--streamableHttp",
+        "mcp-remote",
         "https://mcp-airtable.tailb1bee0.ts.net/mcp"
       ]
     }
