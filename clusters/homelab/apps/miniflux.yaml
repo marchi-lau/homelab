@@ -12,12 +12,12 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: synology-nfs
+  storageClassName: local-path
   resources:
     requests:
       storage: 2Gi
 ---
-# PostgreSQL Database with NFS persistence
+# PostgreSQL Database with local-path storage
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -35,13 +35,6 @@ spec:
       labels:
         app: miniflux-postgres
     spec:
-      initContainers:
-        - name: init-permissions
-          image: busybox:1.36
-          command: ['sh', '-c', 'mkdir -p /data/pgdata && chmod 777 /data/pgdata']
-          volumeMounts:
-            - name: postgres-data
-              mountPath: /data
       containers:
         - name: postgres
           image: postgres:15-alpine
@@ -54,8 +47,6 @@ spec:
               value: "miniflux-secret"
             - name: POSTGRES_DB
               value: "miniflux"
-            - name: PGDATA
-              value: "/var/lib/postgresql/data/pgdata"
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
