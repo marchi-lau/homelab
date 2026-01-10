@@ -13,3 +13,4 @@ resources:
   - mcp-cloudflare.yaml
   - mcp-weather.yaml
   - mcp-airtable.yaml
+  - excalidraw.yaml
