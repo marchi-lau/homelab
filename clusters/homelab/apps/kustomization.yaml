@@ -14,3 +14,4 @@ resources:
   - mcp-weather.yaml
   - mcp-airtable.yaml
   - excalidraw.yaml
+  - miniflux.yaml
