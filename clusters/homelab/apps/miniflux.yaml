@@ -35,6 +35,10 @@ spec:
       labels:
         app: miniflux-postgres
     spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 0
       containers:
         - name: postgres
           image: postgres:15-alpine
