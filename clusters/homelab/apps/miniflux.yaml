@@ -47,6 +47,8 @@ spec:
               value: "miniflux-secret"
             - name: POSTGRES_DB
               value: "miniflux"
+            - name: PGDATA
+              value: "/var/lib/postgresql/data/pgdata"
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
