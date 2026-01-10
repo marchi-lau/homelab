@@ -102,6 +102,8 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 | **AI Draw.io** | https://diagram.marchi.app | ai-drawio | Any | None |
 | **MCP Cloudflare** | https://mcp-cloudflare.tailb1bee0.ts.net | mcp-cloudflare | Any | None |
 | **MCP Airtable** | https://mcp-airtable.tailb1bee0.ts.net | mcp-airtable | Worker | None |
+| **Excalidraw** | https://excalidraw.marchi.app | excalidraw | Any | None |
+| **Miniflux** | https://miniflux.marchi.app | miniflux | Any | 2Gi local-path |
 
 ---
 
@@ -175,6 +177,8 @@ Services are exposed via Cloudflare Tunnel Ingress Controller. No open ports req
 | status.marchi.app | uptime-kuma:3001 | uptime-kuma |
 | homepage.marchi.app | homepage:3000 | homepage |
 | diagram.marchi.app | ai-drawio:3000 | ai-drawio |
+| excalidraw.marchi.app | excalidraw:80 | excalidraw |
+| miniflux.marchi.app | miniflux:8080 | miniflux |
 
 To expose a new service, add an Ingress:
 
@@ -290,6 +294,42 @@ homelab/
 | Subnet    | 10.10.10.0/24    |     |
 | Gateway   | 10.10.10.1       |     |
 | WiFi      | "Homelab" (WPA3) |     |
+
+---
+
+## Lessons Learned
+
+### Storage Classes
+
+| Storage Class | Use Case | Limitations |
+|---------------|----------|-------------|
+| `synology-nfs` | Apps that don't require `chown` (n8n, file storage) | NFS has `root_squash` - blocks chown operations |
+| `local-path` | Databases (PostgreSQL, etc.) that require `chown` | Data tied to specific node, not shared |
+
+### PostgreSQL on NFS
+
+**Problem:** PostgreSQL requires `chown` on its data directory during startup. Synology NFS with `root_squash` blocks this, causing container crash loops.
+
+**Symptoms:**
+```
+chown: /var/lib/postgresql/data/pgdata: Operation not permitted
+```
+
+**Solutions tried (failed):**
+- `PGDATA` subdirectory - still fails, postgres chowns the subdirectory too
+- `runAsUser: 0` - fails due to `root_squash`
+- `runAsUser: 1024` (NFS owner UID) - postgres entrypoint still tries to chown
+- initContainer with chmod 777 - postgres still runs chown after
+
+**Working solution:** Use `local-path` StorageClass for PostgreSQL instead of NFS.
+
+### MCP Auto-Update CronJob
+
+**Problem:** Auto-update CronJob for MCP services was restarting pods every 5 minutes even when no updates.
+
+**Root cause:** Storing revision in deployment annotation, which Flux overwrites on reconcile.
+
+**Solution:** Store revision in a ConfigMap instead (Flux doesn't manage it, so it persists).
 
 ---
 
