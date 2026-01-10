@@ -4,20 +4,7 @@ kind: Namespace
 metadata:
   name: miniflux
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: miniflux-postgres-data
-  namespace: miniflux
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: synology-nfs
-  resources:
-    requests:
-      storage: 2Gi
----
-# PostgreSQL Database
+# PostgreSQL Database (using emptyDir for now - data not persistent across restarts)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -37,21 +24,19 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: bitnami/postgresql:15
+          image: postgres:15-alpine
           ports:
             - containerPort: 5432
           env:
-            - name: POSTGRESQL_USERNAME
+            - name: POSTGRES_USER
               value: "miniflux"
-            - name: POSTGRESQL_PASSWORD
+            - name: POSTGRES_PASSWORD
               value: "miniflux-secret"
-            - name: POSTGRESQL_DATABASE
+            - name: POSTGRES_DB
               value: "miniflux"
-            - name: ALLOW_EMPTY_PASSWORD
-              value: "no"
           volumeMounts:
             - name: postgres-data
-              mountPath: /bitnami/postgresql
+              mountPath: /var/lib/postgresql/data
           resources:
             requests:
               memory: "128Mi"
@@ -61,8 +46,7 @@ spec:
               cpu: "200m"
       volumes:
         - name: postgres-data
-          persistentVolumeClaim:
-            claimName: miniflux-postgres-data
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
