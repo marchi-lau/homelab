@@ -16,3 +16,4 @@ resources:
   - excalidraw.yaml
   - miniflux.yaml
   - open-webui.yaml
+  - rsshub.yaml
