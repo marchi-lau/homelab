@@ -141,6 +141,7 @@ data:
     alias ll='ls -la'
     alias gs='git status'
     alias gp='git pull'
+    alias c='claude --dangerously-skip-permissions'
 
     # Load API keys from environment
     [ -n "$ANTHROPIC_API_KEY" ] && export ANTHROPIC_API_KEY
