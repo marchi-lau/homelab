@@ -19,6 +19,8 @@ spec:
       labels:
         app: www-delta-and-beta
     spec:
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
         - name: www-delta-and-beta
           image: ghcr.io/marchi-lau/www.delta-and-beta.com:latest
