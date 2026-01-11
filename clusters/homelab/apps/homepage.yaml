@@ -20,6 +20,12 @@ data:
       Automation:
         style: row
         columns: 2
+      AI:
+        style: row
+        columns: 2
+      RSS:
+        style: row
+        columns: 2
       Monitoring:
         style: row
         columns: 2
@@ -39,6 +45,20 @@ data:
             icon: uptime-kuma.png
             href: https://status.marchi.app
             description: Status Monitoring
+    - AI:
+        - Open WebUI:
+            icon: https://raw.githubusercontent.com/open-webui/open-webui/main/static/favicon.png
+            href: https://open-webui.marchi.app
+            description: LLM Chat Interface
+    - RSS:
+        - Miniflux:
+            icon: miniflux.png
+            href: https://miniflux.marchi.app
+            description: RSS Reader
+        - RSSHub:
+            icon: rsshub.png
+            href: https://rsshub.marchi.app
+            description: RSS Feed Generator
     - Monitoring:
         - Grafana:
             icon: grafana.png
@@ -65,6 +85,10 @@ data:
             icon: drawio.png
             href: https://diagram.marchi.app
             description: AI Diagram Editor
+        - Excalidraw:
+            icon: excalidraw.png
+            href: https://excalidraw.marchi.app
+            description: Whiteboard
     - Storage:
         - RustFS Console:
             icon: minio.png
