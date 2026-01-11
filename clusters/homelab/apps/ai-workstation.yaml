@@ -190,6 +190,7 @@ spec:
               exec /usr/sbin/sshd -D -e
           ports:
             - containerPort: 22
+            - containerPort: 3000
           env:
             - name: ANTHROPIC_API_KEY
               valueFrom:
@@ -245,5 +246,8 @@ spec:
     - port: 22
       targetPort: 22
       name: ssh
+    - port: 3000
+      targetPort: 3000
+      name: http
   selector:
     app: ai-workstation
