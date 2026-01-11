@@ -42,6 +42,8 @@ data:
     echo "=== Setting up SSH ==="
     mkdir -p /run/sshd
     mkdir -p /home/dev/.ssh
+    chmod 700 /home/dev/.ssh
+    chown dev:dev /home/dev/.ssh
 
     # Persistent SSH host keys
     if [ ! -f /data/ssh/ssh_host_rsa_key ]; then
@@ -50,6 +52,13 @@ data:
       cp /etc/ssh/ssh_host_* /data/ssh/
     else
       cp /data/ssh/ssh_host_* /etc/ssh/
+    fi
+
+    # Persistent authorized_keys
+    if [ -f /data/ssh/authorized_keys ]; then
+      cp /data/ssh/authorized_keys /home/dev/.ssh/authorized_keys
+      chmod 600 /home/dev/.ssh/authorized_keys
+      chown dev:dev /home/dev/.ssh/authorized_keys
     fi
 
     sed -i 's/#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
@@ -108,6 +117,7 @@ data:
     echo "Node.js:     $(node --version)"
     echo "Python:      $(python3 --version)"
     echo "Git:         $(git --version)"
+    echo "GitHub CLI:  $(gh --version 2>/dev/null | head -1 || echo 'not installed')"
     echo ""
     echo "API Keys configured:"
     [ -n "$ANTHROPIC_API_KEY" ] && echo "  - ANTHROPIC_API_KEY: set" || echo "  - ANTHROPIC_API_KEY: not set"
@@ -115,6 +125,39 @@ data:
     [ -n "$GEMINI_API_KEY" ] && echo "  - GEMINI_API_KEY: set" || echo "  - GEMINI_API_KEY: not set"
     SCRIPT
     chmod +x /usr/local/bin/ai-status
+
+    echo "=== Setting up user environment ==="
+    cat > /home/dev/.bashrc << 'BASHRC'
+    # Fix for Ghostty and other modern terminals
+    case "$TERM" in
+      xterm-ghostty|*-direct) export TERM=xterm-256color ;;
+    esac
+
+    # Environment
+    export PATH=$PATH:/usr/local/bin
+    export EDITOR=vim
+
+    # Aliases
+    alias ll='ls -la'
+    alias gs='git status'
+    alias gp='git pull'
+
+    # Load API keys from environment
+    [ -n "$ANTHROPIC_API_KEY" ] && export ANTHROPIC_API_KEY
+    [ -n "$OPENAI_API_KEY" ] && export OPENAI_API_KEY
+    [ -n "$GEMINI_API_KEY" ] && export GEMINI_API_KEY
+
+    # Welcome message
+    echo "AI Workstation ready. Run 'ai-status' to check tools."
+    BASHRC
+    chown dev:dev /home/dev/.bashrc
+
+    # Script to save SSH keys to persistent storage
+    cat > /usr/local/bin/save-ssh-keys << 'SCRIPT'
+    #!/bin/bash
+    cp /home/dev/.ssh/authorized_keys /data/ssh/authorized_keys 2>/dev/null && echo "SSH keys saved to persistent storage" || echo "No authorized_keys to save"
+    SCRIPT
+    chmod +x /usr/local/bin/save-ssh-keys
 
     echo "=== Setup complete! ==="
 ---
