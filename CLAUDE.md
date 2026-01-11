@@ -182,3 +182,38 @@ When configuring MCP clients in Claude Desktop or Claude Code (`.mcp.json`):
 - Header configuration patterns
 
 Copy existing working configurations and only update the endpoint URL.
+
+## Lessons Learned
+
+### Synology NFS Permissions
+
+When using `synology-nfs` storage class with non-root containers:
+
+1. **Synology NFS Settings** must have:
+   - Squash: **No mapping** (not "Map root to admin")
+   - After changing, **restart NFS service** on Synology
+
+2. **Even with "No mapping"**, non-root users may fail to access NFS volumes. Fix with:
+   ```yaml
+   spec:
+     securityContext:
+       fsGroup: <user-gid>  # e.g., 1001
+     initContainers:
+       - name: fix-permissions
+         image: busybox:1.36
+         command: ['sh', '-c', 'chmod -R 777 /data && chown -R <uid>:<gid> /data']
+         volumeMounts:
+           - name: data
+             mountPath: /data
+   ```
+
+3. **Storage class selection**:
+   - `synology-nfs`: Shared storage, survives node failure, needs permission fixes for non-root
+   - `local-path`: Node-local storage, no permission issues, but data tied to specific node
+
+### Tailscale Service Expose
+
+- `tailscale.com/expose: "true"` annotation exposes services via Tailscale
+- For **TCP services** (SSH), use Service annotation instead of Ingress
+- For **multiple ports**, SSH tunneling is more reliable: `ssh -L 3000:localhost:3000 user@host`
+- Tailscale Ingress is HTTP/HTTPS only
