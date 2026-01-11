@@ -179,6 +179,15 @@ spec:
       labels:
         app: ai-workstation
     spec:
+      securityContext:
+        fsGroup: 1001
+      initContainers:
+        - name: fix-permissions
+          image: busybox:1.36
+          command: ['sh', '-c', 'chmod -R 777 /data && chown -R 1001:1001 /data']
+          volumeMounts:
+            - name: data
+              mountPath: /data
       containers:
         - name: ai-workstation
           image: ubuntu:24.04
