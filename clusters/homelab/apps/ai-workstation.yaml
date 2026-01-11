@@ -77,7 +77,7 @@ data:
     npm install -g @anthropic-ai/claude-code || true
 
     echo "=== Installing Aider (multi-LLM coding assistant) ==="
-    pip3 install aider-chat --break-system-packages
+    pip3 install aider-chat --break-system-packages || true
 
     echo "=== Installing additional tools ==="
     # GitHub CLI
