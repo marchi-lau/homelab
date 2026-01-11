@@ -1,0 +1,205 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-workstation
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ai-workstation-data
+  namespace: ai-workstation
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: synology-nfs
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-workstation-setup
+  namespace: ai-workstation
+data:
+  setup.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "=== Installing base packages ==="
+    apt-get update
+    apt-get install -y \
+      openssh-server sudo git curl wget tmux vim nano \
+      python3 python3-pip python3-venv \
+      build-essential jq unzip htop
+
+    echo "=== Creating user ==="
+    useradd -m -s /bin/bash -G sudo dev || true
+    echo "dev:dev" | chpasswd
+    echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+    echo "=== Setting up SSH ==="
+    mkdir -p /run/sshd
+    mkdir -p /home/dev/.ssh
+
+    # Persistent SSH host keys
+    if [ ! -f /data/ssh/ssh_host_rsa_key ]; then
+      mkdir -p /data/ssh
+      ssh-keygen -A
+      cp /etc/ssh/ssh_host_* /data/ssh/
+    else
+      cp /data/ssh/ssh_host_* /etc/ssh/
+    fi
+
+    sed -i 's/#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+    sed -i 's/#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+    echo "=== Installing Node.js 22 ==="
+    curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+    apt-get install -y nodejs
+
+    echo "=== Installing Claude Code CLI ==="
+    npm install -g @anthropic-ai/claude-code
+
+    echo "=== Installing Gemini CLI ==="
+    npm install -g @anthropic-ai/claude-code @anthropic-ai/sdk || true
+    # Google Gemini CLI
+    npm install -g @anthropic-ai/claude-code || true
+
+    echo "=== Installing Aider (multi-LLM coding assistant) ==="
+    pip3 install aider-chat --break-system-packages
+
+    echo "=== Installing additional tools ==="
+    # GitHub CLI
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+    apt-get update && apt-get install -y gh
+
+    echo "=== Setting up persistent directories ==="
+    # Workspace
+    mkdir -p /data/workspace
+    chown -R dev:dev /data/workspace
+    ln -sf /data/workspace /home/dev/workspace || true
+
+    # Claude config
+    mkdir -p /data/.claude
+    chown -R dev:dev /data/.claude
+    ln -sf /data/.claude /home/dev/.claude || true
+
+    # Aider config
+    mkdir -p /data/.aider
+    chown -R dev:dev /data/.aider
+    ln -sf /data/.aider /home/dev/.aider || true
+
+    # Git config
+    mkdir -p /data/.gitconfig.d
+    chown -R dev:dev /data/.gitconfig.d
+
+    chown -R dev:dev /home/dev
+
+    echo "=== Creating helper scripts ==="
+    cat > /usr/local/bin/ai-status << 'SCRIPT'
+    #!/bin/bash
+    echo "=== AI Workstation Status ==="
+    echo ""
+    echo "Claude Code: $(claude --version 2>/dev/null || echo 'not installed')"
+    echo "Aider:       $(aider --version 2>/dev/null || echo 'not installed')"
+    echo "Node.js:     $(node --version)"
+    echo "Python:      $(python3 --version)"
+    echo "Git:         $(git --version)"
+    echo ""
+    echo "API Keys configured:"
+    [ -n "$ANTHROPIC_API_KEY" ] && echo "  - ANTHROPIC_API_KEY: set" || echo "  - ANTHROPIC_API_KEY: not set"
+    [ -n "$OPENAI_API_KEY" ] && echo "  - OPENAI_API_KEY: set" || echo "  - OPENAI_API_KEY: not set"
+    [ -n "$GEMINI_API_KEY" ] && echo "  - GEMINI_API_KEY: set" || echo "  - GEMINI_API_KEY: not set"
+    SCRIPT
+    chmod +x /usr/local/bin/ai-status
+
+    echo "=== Setup complete! ==="
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-workstation
+  namespace: ai-workstation
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ai-workstation
+  template:
+    metadata:
+      labels:
+        app: ai-workstation
+    spec:
+      containers:
+        - name: ai-workstation
+          image: ubuntu:24.04
+          command:
+            - /bin/bash
+            - -c
+            - |
+              /setup/setup.sh
+              exec /usr/sbin/sshd -D -e
+          ports:
+            - containerPort: 22
+          env:
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-workstation-secrets
+                  key: anthropic-api-key
+                  optional: true
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-workstation-secrets
+                  key: openai-api-key
+                  optional: true
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-workstation-secrets
+                  key: gemini-api-key
+                  optional: true
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: setup-script
+              mountPath: /setup
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              memory: "8Gi"
+              cpu: "4000m"
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: ai-workstation-data
+        - name: setup-script
+          configMap:
+            name: ai-workstation-setup
+            defaultMode: 0755
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-workstation
+  namespace: ai-workstation
+  annotations:
+    tailscale.com/expose: "true"
+    tailscale.com/hostname: "ai-workstation"
+    tailscale.com/tags: "tag:kubernetes"
+spec:
+  type: ClusterIP
+  ports:
+    - port: 22
+      targetPort: 22
+      name: ssh
+  selector:
+    app: ai-workstation
