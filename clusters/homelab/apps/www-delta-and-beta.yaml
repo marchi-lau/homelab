@@ -1,0 +1,70 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: www-delta-and-beta
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: www-delta-and-beta
+  namespace: www-delta-and-beta
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: www-delta-and-beta
+  template:
+    metadata:
+      labels:
+        app: www-delta-and-beta
+    spec:
+      containers:
+        - name: www-delta-and-beta
+          image: ghcr.io/marchi-lau/www.delta-and-beta.com:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3000"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: www-delta-and-beta
+  namespace: www-delta-and-beta
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: www-delta-and-beta
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: www-delta-and-beta
+  namespace: www-delta-and-beta
+spec:
+  ingressClassName: cloudflare-tunnel
+  rules:
+    - host: www.delta-and-beta.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: www-delta-and-beta
+                port:
+                  number: 3000

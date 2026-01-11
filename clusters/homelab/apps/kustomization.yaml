@@ -18,3 +18,4 @@ resources:
   - open-webui.yaml
   - rsshub.yaml
   - ai-workstation.yaml
+  - www-delta-and-beta.yaml
