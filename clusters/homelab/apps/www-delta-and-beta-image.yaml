@@ -1,0 +1,25 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: www-delta-and-beta
+  namespace: flux-system
+spec:
+  image: ghcr.io/delta-and-beta/www.delta-and-beta.com
+  interval: 1m
+  secretRef:
+    name: ghcr-auth
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: www-delta-and-beta
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: www-delta-and-beta
+  filterTags:
+    pattern: '^[a-f0-9]{7,40}$'
+  policy:
+    alphabetical:
+      order: desc

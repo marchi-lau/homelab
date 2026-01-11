@@ -19,3 +19,5 @@ resources:
   - rsshub.yaml
   - ai-workstation.yaml
   - www-delta-and-beta.yaml
+  - www-delta-and-beta-image.yaml
+  - www-delta-and-beta-automation.yaml
