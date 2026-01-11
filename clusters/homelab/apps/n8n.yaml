@@ -59,6 +59,8 @@ spec:
               value: "https://n8n.tailb1bee0.ts.net/"
             - name: GENERIC_TIMEZONE
               value: "Asia/Hong_Kong"
+            - name: N8N_PROXY_HOPS
+              value: "1"
           volumeMounts:
             - name: n8n-data
               mountPath: /home/node/.n8n
