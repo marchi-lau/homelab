@@ -217,3 +217,71 @@ When using `synology-nfs` storage class with non-root containers:
 - For **TCP services** (SSH), use Service annotation instead of Ingress
 - For **multiple ports**, SSH tunneling is more reliable: `ssh -L 3000:localhost:3000 user@host`
 - Tailscale Ingress is HTTP/HTTPS only
+
+### Docker Cross-Platform Builds
+
+When building on Apple Silicon (arm64) for K3s nodes (amd64):
+
+```bash
+docker buildx build --platform linux/amd64 -t <image>:<tag> --push .
+```
+
+- K3s nodes are **amd64**, Mac is **arm64** - images must match target platform
+- Error `no match for platform in manifest` means wrong architecture
+- Always use `--platform linux/amd64` for K3s deployments
+
+### ghcr.io Private Images
+
+ghcr.io images are **private by default**. To pull in K3s:
+
+1. Create imagePullSecret:
+   ```bash
+   kubectl create secret docker-registry ghcr-secret \
+     --namespace=<app-namespace> \
+     --docker-server=ghcr.io \
+     --docker-username=<github-user> \
+     --docker-password=$(gh auth token)
+   ```
+
+2. Reference in deployment:
+   ```yaml
+   spec:
+     imagePullSecrets:
+       - name: ghcr-secret
+   ```
+
+### Flux Image Automation
+
+For auto-deployment when source repo changes:
+
+1. **Install controllers** (if not present):
+   ```bash
+   kubectl apply -f https://github.com/fluxcd/flux2/releases/download/v2.7.5/install.yaml --server-side
+   ```
+
+2. **GitRepository must use HTTPS + PAT** for write access (not SSH deploy key):
+   ```yaml
+   # clusters/homelab/flux-system/gotk-sync.yaml
+   spec:
+     secretRef:
+       name: flux-system-pat  # Not flux-system (read-only deploy key)
+     url: https://github.com/<user>/<repo>.git
+   ```
+
+3. **Create PAT secret**:
+   ```bash
+   kubectl create secret generic flux-system-pat \
+     --namespace=flux-system \
+     --from-literal=username=<github-user> \
+     --from-literal=password=$(gh auth token)
+   ```
+
+4. **Required resources**:
+   - `ImageRepository` - scans registry for new tags
+   - `ImagePolicy` - selects which tag to use
+   - `ImageUpdateAutomation` - commits updated tags to Git
+
+5. **Deployment marker** for auto-update:
+   ```yaml
+   image: ghcr.io/org/repo:tag # {"$imagepolicy": "flux-system:policy-name"}
+   ```
