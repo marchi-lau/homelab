@@ -22,7 +22,7 @@ spec:
         - name: ghcr-secret
       containers:
         - name: www-delta-and-beta
-          image: ghcr.io/delta-and-beta/www.delta-and-beta.com:2ab8767 # {"$imagepolicy": "flux-system:www-delta-and-beta"}
+          image: ghcr.io/delta-and-beta/www.delta-and-beta.com:107a92c # {"$imagepolicy": "flux-system:www-delta-and-beta"}
           ports:
             - containerPort: 3000
           env:
