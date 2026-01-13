@@ -107,6 +107,40 @@ spec:
             limits:
               memory: "64Mi"
               cpu: "100m"
+        - name: laravel-echo-server
+          image: oanhnn/laravel-echo-server:latest
+          ports:
+            - containerPort: 6001
+          env:
+            - name: LARAVEL_ECHO_SERVER_AUTH_HOST
+              value: "http://localhost"
+            - name: LARAVEL_ECHO_SERVER_HOST
+              value: "0.0.0.0"
+            - name: LARAVEL_ECHO_SERVER_PORT
+              value: "6001"
+            - name: LARAVEL_ECHO_SERVER_DEBUG
+              value: "false"
+            - name: ECHO_REDIS_PORT
+              value: "6379"
+            - name: ECHO_REDIS_HOSTNAME
+              value: "localhost"
+            - name: ECHO_PROTOCOL
+              value: "http"
+            - name: ECHO_ALLOW_CORS
+              value: "true"
+            - name: ECHO_ALLOW_ORIGIN
+              value: "*"
+            - name: ECHO_ALLOW_METHODS
+              value: "*"
+            - name: ECHO_ALLOW_HEADERS
+              value: "*"
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
       volumes:
         - name: storage
           persistentVolumeClaim:
@@ -122,6 +156,19 @@ spec:
   ports:
     - port: 80
       targetPort: 80
+  selector:
+    app: webhook-site
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: laravel-echo-server
+  namespace: webhook-site
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6001
+      targetPort: 6001
   selector:
     app: webhook-site
 ---
