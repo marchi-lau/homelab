@@ -123,6 +123,15 @@ data:
     [ -n "$ANTHROPIC_API_KEY" ] && echo "  - ANTHROPIC_API_KEY: set" || echo "  - ANTHROPIC_API_KEY: not set"
     [ -n "$OPENAI_API_KEY" ] && echo "  - OPENAI_API_KEY: set" || echo "  - OPENAI_API_KEY: not set"
     [ -n "$GEMINI_API_KEY" ] && echo "  - GEMINI_API_KEY: set" || echo "  - GEMINI_API_KEY: not set"
+    echo ""
+    echo "Quick Commands:"
+    echo "  c          - Run Claude Code (skip permissions)"
+    echo "  t          - Create/attach tmux session (named after current dir)"
+    echo "  w          - Create tmux session with 'claude' window"
+    echo "  d          - Detach from tmux session"
+    echo "  b          - Edit ~/.bashrc with nano"
+    echo "  ll         - List files (ls -la)"
+    echo "  gs / gp    - Git status / pull"
     SCRIPT
     chmod +x /usr/local/bin/ai-status
 
@@ -141,7 +150,29 @@ data:
     alias ll='ls -la'
     alias gs='git status'
     alias gp='git pull'
+    alias b='nano ~/.bashrc'
     alias c='claude --dangerously-skip-permissions'
+    alias d='tmux detach'
+
+    # Tmux session helper - create/attach session named after current directory
+    t() {
+      local s
+      s="$(basename "$PWD")"
+      s="${s//[^A-Za-z0-9_-]/_}"
+      tmux new-session -A -s "$s" -c "$PWD"
+    }
+
+    # Tmux with Claude window - create session with dedicated claude window
+    w() {
+      local s cmd
+      s="$(basename "$PWD")"
+      s="${s//[^A-Za-z0-9_-]/_}"
+      cmd='claude --dangerously-skip-permissions'
+      tmux has-session -t "$s" 2>/dev/null || tmux new-session -d -s "$s" -c "$PWD"
+      tmux list-windows -t "$s" -F '#{window_name}' | grep -qx 'claude' \
+        || tmux new-window -t "$s" -n claude -c "$PWD" "$cmd"
+      tmux attach -t "$s"
+    }
 
     # Load API keys from environment
     [ -n "$ANTHROPIC_API_KEY" ] && export ANTHROPIC_API_KEY
