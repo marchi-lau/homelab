@@ -1,0 +1,145 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: webhook-site
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: webhook-site-secrets
+  namespace: webhook-site
+type: Opaque
+stringData:
+  app-key: "base64:hADlEh/smElOphtCv+a+sgB/NppEtzSquTOk7xkJEWE="
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: webhook-site-storage
+  namespace: webhook-site
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webhook-site
+  namespace: webhook-site
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: webhook-site
+  template:
+    metadata:
+      labels:
+        app: webhook-site
+    spec:
+      containers:
+        - name: webhook-site
+          image: webhooksite/webhook.site:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: APP_ENV
+              value: "production"
+            - name: APP_DEBUG
+              value: "false"
+            - name: APP_URL
+              value: "https://webhook.marchi.app"
+            - name: APP_LOG
+              value: "errorlog"
+            - name: APP_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: webhook-site-secrets
+                  key: app-key
+            - name: DB_CONNECTION
+              value: "sqlite"
+            - name: REDIS_HOST
+              value: "localhost"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: BROADCAST_DRIVER
+              value: "redis"
+            - name: QUEUE_DRIVER
+              value: "redis"
+            - name: CACHE_DRIVER
+              value: "redis"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: storage
+              mountPath: /var/www/html/storage
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 30
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "25m"
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: webhook-site-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhook-site
+  namespace: webhook-site
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: webhook-site
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webhook-site
+  namespace: webhook-site
+spec:
+  ingressClassName: cloudflare-tunnel
+  rules:
+    - host: webhook.marchi.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: webhook-site
+                port:
+                  number: 80

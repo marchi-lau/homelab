@@ -22,6 +22,7 @@ Speckit-compatible specifications for all K8s services deployed in the homelab c
 | 012 | [open-webui](./012-open-webui/spec.md) | AI chat interface | Deployed |
 | 013 | [rsshub](./013-rsshub/spec.md) | RSS feed generator | Deployed |
 | 014 | [www-delta-and-beta](./014-www-delta-and-beta/spec.md) | Static website | Deployed |
+| 019 | [webhook-site](./019-webhook-site/spec.md) | Webhook testing tool | Planned |
 
 ### Private MCP Services (Tailscale)
 
@@ -40,7 +41,7 @@ Speckit-compatible specifications for all K8s services deployed in the homelab c
 ## Conventions
 
 ### Spec Numbering
-- Sequential zero-padded numbers: `001`, `002`, ... `018`
+- Sequential zero-padded numbers: `001`, `002`, ... `019`
 - New services get the next available number
 
 ### Directory Structure
