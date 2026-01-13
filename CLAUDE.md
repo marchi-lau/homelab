@@ -9,6 +9,51 @@ Always read these docs first for context:
 - `docs/Nodes/S740-Master.md` - Master node details
 - `docs/Network/VLAN-Setup.md` - Network configuration
 - `docs/Runbooks/Flux-Commands.md` - Flux GitOps commands
+- `specs/README.md` - Service specifications index
+
+## Speckit Integration
+
+This repository uses speckit for service specifications. All deployed services have formal specs.
+
+### Spec Structure
+
+```
+specs/
+├── README.md                      # Spec index
+├── _template/                     # Template for new specs
+│   └── service-spec-template.md
+└── NNN-service-name/
+    └── spec.md                    # Service specification
+```
+
+### Specs vs Docs
+
+| Content Type | Location |
+|-------------|----------|
+| Technical requirements | `specs/NNN-name/spec.md` |
+| K8s resource definitions | `specs/NNN-name/spec.md` |
+| Dependency mapping | `specs/NNN-name/spec.md` |
+| User guides | `docs/Apps/name.md` |
+| Troubleshooting guides | `docs/Apps/name.md` |
+| Architecture diagrams | `docs/Apps/name.md` |
+
+### Speckit Commands
+
+```bash
+# Find specs by keyword
+/speckit.find <keyword>
+
+# Create new spec for new service
+/speckit.new <service-name>
+```
+
+### Creating a New Service
+
+1. Create spec first: `cp -r specs/_template specs/NNN-service-name`
+2. Fill in spec with requirements and K8s config
+3. Create manifest in `clusters/homelab/apps/<service-name>.yaml`
+4. Update kustomization
+5. Create docs in `docs/Apps/<service-name>.md`
 
 ## Environment
 
