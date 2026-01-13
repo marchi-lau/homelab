@@ -113,17 +113,21 @@ spec:
             - containerPort: 6001
           env:
             - name: LARAVEL_ECHO_SERVER_AUTH_HOST
-              value: "http://localhost"
+              value: "http://127.0.0.1"
             - name: LARAVEL_ECHO_SERVER_HOST
               value: "0.0.0.0"
             - name: LARAVEL_ECHO_SERVER_PORT
               value: "6001"
             - name: LARAVEL_ECHO_SERVER_DEBUG
               value: "false"
+            - name: REDIS_HOST
+              value: "127.0.0.1"
+            - name: REDIS_PORT
+              value: "6379"
             - name: ECHO_REDIS_PORT
               value: "6379"
             - name: ECHO_REDIS_HOSTNAME
-              value: "localhost"
+              value: "127.0.0.1"
             - name: ECHO_PROTOCOL
               value: "http"
             - name: ECHO_ALLOW_CORS
