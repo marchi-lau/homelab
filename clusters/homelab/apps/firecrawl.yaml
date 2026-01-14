@@ -91,6 +91,8 @@ spec:
               value: "firecrawl"
             - name: DATABASE_URL
               value: "postgresql://firecrawl:$(POSTGRES_PASSWORD)@localhost:5432/firecrawl"
+            - name: NUQ_DATABASE_URL
+              value: "postgresql://firecrawl:$(POSTGRES_PASSWORD)@localhost:5432/firecrawl"
             - name: BULL_AUTH_KEY
               valueFrom:
                 secretKeyRef:
