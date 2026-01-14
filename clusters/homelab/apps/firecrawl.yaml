@@ -178,9 +178,9 @@ spec:
               command: ["rabbitmq-diagnostics", "ping"]
             initialDelaySeconds: 30
             periodSeconds: 10
-        # PostgreSQL
+        # PostgreSQL with pg_cron and nuq schema
         - name: postgres
-          image: postgres:15-alpine
+          image: ghcr.io/firecrawl/nuq-postgres:latest
           ports:
             - containerPort: 5432
           env:
