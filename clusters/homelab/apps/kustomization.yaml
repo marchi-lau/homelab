@@ -22,3 +22,4 @@ resources:
   - www-delta-and-beta-image.yaml
   - www-delta-and-beta-automation.yaml
   - webhook-site.yaml
+  - firecrawl.yaml
