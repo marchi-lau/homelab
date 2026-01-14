@@ -2,7 +2,7 @@
 
 > Spec Number: 021
 > Created: 2026-01-14
-> Status: Planned
+> Status: Deployed
 > Manifest: clusters/homelab/apps/mcp-firecrawl.yaml
 
 ## Overview
@@ -78,6 +78,7 @@ Note: MCP endpoints require specific protocol headers and don't support simple H
 | Variable | Value | Purpose |
 |----------|-------|---------|
 | HTTP_STREAMABLE_SERVER | `true` | Enable HTTP Streamable mode |
+| HOST | `0.0.0.0` | Bind to all interfaces (required for K8s) |
 | FIRECRAWL_API_URL | `https://firecrawl.tailb1bee0.ts.net` | Self-hosted Firecrawl endpoint |
 | NODE_ENV | `production` | Node environment |
 
@@ -143,6 +144,28 @@ kubectl rollout restart deployment/mcp-firecrawl -n mcp-firecrawl
 
 - Spec 020: Firecrawl (backend API)
 - External: https://github.com/firecrawl/firecrawl-mcp-server
+
+## Implementation Notes (2026-01-14)
+
+### Files Created
+| File | Purpose |
+|------|---------|
+| `clusters/homelab/apps/mcp-firecrawl.yaml` | K8s deployment, service, and Tailscale ingress |
+| `specs/021-mcp-firecrawl/spec.md` | This specification |
+
+### Bug Fixes Applied During Implementation
+- **Issue:** Server bound to `::1:3000` (localhost only), causing probe failures
+  - **Fix:** Added `HOST=0.0.0.0` environment variable
+- **Issue:** HTTP health probes returned 400/406 (MCP requires specific headers)
+  - **Fix:** Changed to TCP probes
+- **Issue:** npm install takes ~50s, causing liveness probe failures
+  - **Fix:** Added startupProbe with 30 retries (5 minutes tolerance)
+
+### Related Commits
+- `1609f2d` feat(mcp-firecrawl): deploy MCP server for Firecrawl web scraping API
+- `cf19b33` fix(mcp-firecrawl): add startupProbe for slow npm install
+- `92f3367` fix(mcp-firecrawl): use TCP probes instead of HTTP
+- `15c7a0d` fix(mcp-firecrawl): bind to 0.0.0.0 for k8s pod access
 
 ## Tags
 
