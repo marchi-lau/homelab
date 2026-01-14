@@ -35,6 +35,8 @@ spec:
           env:
             - name: HTTP_STREAMABLE_SERVER
               value: "true"
+            - name: HOST
+              value: "0.0.0.0"
             - name: FIRECRAWL_API_URL
               value: "https://firecrawl.tailb1bee0.ts.net"
             - name: NODE_ENV
