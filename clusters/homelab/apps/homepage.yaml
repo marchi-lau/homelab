@@ -89,6 +89,10 @@ data:
             icon: excalidraw.png
             href: https://excalidraw.marchi.app
             description: Whiteboard
+        - Webhook.site:
+            icon: https://webhook.site/favicon.ico
+            href: https://webhook.marchi.app
+            description: Webhook Testing
     - Storage:
         - RustFS Console:
             icon: minio.png
