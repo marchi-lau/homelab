@@ -330,3 +330,35 @@ For auto-deployment when source repo changes:
    ```yaml
    image: ghcr.io/org/repo:tag # {"$imagepolicy": "flux-system:policy-name"}
    ```
+
+### Inter-Service Communication
+
+When one pod needs to communicate with another service in the cluster:
+
+1. **Use internal K8s service DNS**, NOT external/Tailscale URLs:
+   ```yaml
+   # ✅ Correct - Internal DNS
+   env:
+     - name: BACKEND_URL
+       value: "http://<service>.<namespace>.svc.cluster.local:<port>"
+
+   # ❌ Wrong - External/Tailscale URL (won't resolve from inside pods)
+   env:
+     - name: BACKEND_URL
+       value: "https://<service>.tailb1bee0.ts.net"
+   ```
+
+2. **DNS format**: `<service-name>.<namespace>.svc.cluster.local:<port>`
+   - Example: `http://firecrawl.firecrawl.svc.cluster.local:3002`
+
+3. **Why Tailscale DNS fails inside pods**:
+   - K8s pods use CoreDNS, not Tailscale's MagicDNS
+   - Tailscale hostnames only resolve on machines running Tailscale client
+   - Pods don't have Tailscale client installed
+
+4. **When to use which URL**:
+   | Scenario | URL Type |
+   |----------|----------|
+   | Pod → Pod (same cluster) | Internal K8s DNS |
+   | External client → Service | Tailscale/Cloudflare URL |
+   | MCP client config (.mcp.json) | Tailscale URL (runs on local machine) |
