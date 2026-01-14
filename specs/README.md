@@ -32,6 +32,7 @@ Speckit-compatible specifications for all K8s services deployed in the homelab c
 | 016 | [mcp-weather](./016-mcp-weather/spec.md) | Weather API proxy | Deployed |
 | 017 | [mcp-airtable](./017-mcp-airtable/spec.md) | Airtable API proxy | Deployed |
 | 020 | [firecrawl](./020-firecrawl/spec.md) | Web scraping API | Deployed |
+| 021 | [mcp-firecrawl](./021-mcp-firecrawl/spec.md) | MCP Firecrawl server | Planned |
 
 ### Development Tools
 

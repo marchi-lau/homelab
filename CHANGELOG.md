@@ -5,6 +5,9 @@ All notable changes to this homelab cluster will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **mcp-firecrawl**: MCP server for Firecrawl web scraping API (spec 021)
+  - Tailscale ingress at `mcp-firecrawl.<tailnet>.ts.net`
+  - HTTP Streamable mode for Claude Code integration
 - **firecrawl**: Web scraping API with Playwright browser automation (spec 020)
   - Tailscale ingress at `firecrawl.<tailnet>.ts.net`
   - PostgreSQL, Redis, RabbitMQ sidecars
