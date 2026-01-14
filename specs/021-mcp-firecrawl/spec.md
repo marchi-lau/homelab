@@ -46,8 +46,11 @@ MCP Firecrawl Server provides Model Context Protocol access to the self-hosted F
 
 | Probe | Type | Port | Path | Initial Delay |
 |-------|------|------|------|---------------|
-| Readiness | HTTP | 3000 | /mcp | 15s |
-| Liveness | HTTP | 3000 | /mcp | 30s |
+| Startup | TCP | 3000 | N/A | 10s (30 retries) |
+| Readiness | TCP | 3000 | N/A | N/A |
+| Liveness | TCP | 3000 | N/A | N/A |
+
+Note: MCP endpoints require specific protocol headers and don't support simple HTTP health checks.
 
 ## Networking
 
