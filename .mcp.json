@@ -19,6 +19,14 @@
         "mcp-remote",
         "https://mcp-airtable.tailb1bee0.ts.net/mcp"
       ]
+    },
+    "mcp-firecrawl": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp-firecrawl.tailb1bee0.ts.net/mcp"
+      ]
     }
   }
 }
