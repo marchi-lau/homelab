@@ -216,6 +216,25 @@ kubectl rollout restart deployment/ai-workstation -n ai-workstation
 
 - External: https://github.com/anthropics/claude-code
 
+## Implementation Notes (2026-01-14)
+
+### Files Modified
+| File | Changes |
+|------|---------|
+| `clusters/homelab/apps/ai-workstation.yaml` | Added tmux helper aliases (t, w, d, b) and functions |
+
+### Features Implemented
+- [x] `b` alias - Edit .bashrc with nano
+- [x] `d` alias - Detach from tmux session
+- [x] `t()` function - Create/attach tmux session named after current directory
+- [x] `w()` function - Create tmux session with dedicated claude window
+- [x] Updated ai-status to show quick command reference
+
+### Related Commits
+- `4f9d946` feat(ai-workstation): add tmux helper aliases and functions
+- `3b3ac90` feat: add claude alias 'c' to ai-workstation
+- `acbd873` fix: ai-workstation - persistent SSH keys, tmux TERM fix, bashrc setup
+
 ## Tags
 
 #homelab #k8s #development #ai #coding #ssh #tailscale
