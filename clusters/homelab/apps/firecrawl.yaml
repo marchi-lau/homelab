@@ -117,20 +117,18 @@ spec:
               cpu: "2000m"
           readinessProbe:
             httpGet:
-              path: /v1/health
+              path: /
               port: 3002
-            initialDelaySeconds: 90
-            periodSeconds: 15
-            timeoutSeconds: 10
-            failureThreshold: 10
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
           livenessProbe:
             httpGet:
-              path: /v1/health
+              path: /
               port: 3002
-            initialDelaySeconds: 120
+            initialDelaySeconds: 90
             periodSeconds: 30
-            timeoutSeconds: 10
-            failureThreshold: 5
+            timeoutSeconds: 5
         # Playwright browser service
         - name: playwright
           image: ghcr.io/firecrawl/playwright-service:latest

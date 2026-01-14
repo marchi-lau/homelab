@@ -14,7 +14,7 @@ Firecrawl is a self-hosted web scraping and crawling API that converts web pages
 ### SR-1: Web Scraping API
 - **Need:** API to crawl/scrape web pages and return clean content
 - **Solution:** Firecrawl API with Playwright browser automation
-- **Verification:** `curl https://firecrawl.<tailnet>.ts.net/v1/health`
+- **Verification:** `curl https://firecrawl.<tailnet>.ts.net/` returns JSON response
 
 ### SR-2: Private Access Only
 - **Need:** Service should not be publicly accessible
@@ -50,8 +50,8 @@ Firecrawl is a self-hosted web scraping and crawling API that converts web pages
 
 | Probe | Type | Port | Path | Initial Delay |
 |-------|------|------|------|---------------|
-| Readiness | HTTP | 3002 | /v1/health | 30s |
-| Liveness | HTTP | 3002 | /v1/health | 60s |
+| Readiness | HTTP | 3002 | / | 60s |
+| Liveness | HTTP | 3002 | / | 90s |
 
 ## Networking
 
@@ -117,7 +117,7 @@ kubectl logs -n firecrawl -l app=firecrawl -c firecrawl-api --tail=50
 
 ### Test API
 ```bash
-curl -X POST https://firecrawl.<tailnet>.ts.net/v1/scrape \
+curl -X POST https://firecrawl.<tailnet>.ts.net/v0/scrape \
   -H "Content-Type: application/json" \
   -d '{"url": "https://example.com"}'
 ```
