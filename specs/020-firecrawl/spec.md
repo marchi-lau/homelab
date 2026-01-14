@@ -31,8 +31,8 @@ Firecrawl is a self-hosted web scraping and crawling API that converts web pages
 | Property | Value |
 |----------|-------|
 | Namespace | `firecrawl` |
-| Image (API) | `ghcr.io/mendableai/firecrawl:latest` |
-| Image (Playwright) | `ghcr.io/mendableai/firecrawl-playwright:latest` |
+| Image (API) | `ghcr.io/firecrawl/firecrawl:latest` |
+| Image (Playwright) | `ghcr.io/firecrawl/playwright-service:latest` |
 | Replicas | 1 |
 | Strategy | Recreate |
 

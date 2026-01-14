@@ -54,7 +54,7 @@ spec:
       containers:
         # Main Firecrawl API
         - name: firecrawl-api
-          image: ghcr.io/mendableai/firecrawl:latest
+          image: ghcr.io/firecrawl/firecrawl:latest
           ports:
             - containerPort: 3002
           env:
@@ -125,7 +125,7 @@ spec:
             timeoutSeconds: 5
         # Playwright browser service
         - name: playwright
-          image: ghcr.io/mendableai/firecrawl-playwright:latest
+          image: ghcr.io/firecrawl/playwright-service:latest
           ports:
             - containerPort: 3000
           env:
