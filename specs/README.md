@@ -31,6 +31,7 @@ Speckit-compatible specifications for all K8s services deployed in the homelab c
 | 015 | [mcp-cloudflare](./015-mcp-cloudflare/spec.md) | Cloudflare API proxy | Deployed |
 | 016 | [mcp-weather](./016-mcp-weather/spec.md) | Weather API proxy | Deployed |
 | 017 | [mcp-airtable](./017-mcp-airtable/spec.md) | Airtable API proxy | Deployed |
+| 020 | [firecrawl](./020-firecrawl/spec.md) | Web scraping API | Planned |
 
 ### Development Tools
 
@@ -41,7 +42,7 @@ Speckit-compatible specifications for all K8s services deployed in the homelab c
 ## Conventions
 
 ### Spec Numbering
-- Sequential zero-padded numbers: `001`, `002`, ... `019`
+- Sequential zero-padded numbers: `001`, `002`, ... `020`
 - New services get the next available number
 
 ### Directory Structure

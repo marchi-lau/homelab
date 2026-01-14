@@ -1,0 +1,245 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: firecrawl
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: firecrawl-secrets
+  namespace: firecrawl
+type: Opaque
+stringData:
+  postgres-password: "hix8rt7Wiu9U2IEcykHpPWk5"
+  bull-auth-key: "kvVhJ7SerWuJHwZtIzpwixST"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: firecrawl-postgres-data
+  namespace: firecrawl
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: synology-nfs
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firecrawl
+  namespace: firecrawl
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: firecrawl
+  template:
+    metadata:
+      labels:
+        app: firecrawl
+    spec:
+      initContainers:
+        - name: fix-permissions
+          image: busybox:1.36
+          command: ['sh', '-c', 'chmod -R 777 /var/lib/postgresql/data && chown -R 999:999 /var/lib/postgresql/data']
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+      containers:
+        # Main Firecrawl API
+        - name: firecrawl-api
+          image: ghcr.io/mendableai/firecrawl:latest
+          ports:
+            - containerPort: 3002
+          env:
+            - name: PORT
+              value: "3002"
+            - name: HOST
+              value: "0.0.0.0"
+            - name: REDIS_URL
+              value: "redis://localhost:6379"
+            - name: REDIS_RATE_LIMIT_URL
+              value: "redis://localhost:6379"
+            - name: RABBITMQ_DEFAULT_USER
+              value: "guest"
+            - name: RABBITMQ_DEFAULT_PASS
+              value: "guest"
+            - name: RABBITMQ_URL
+              value: "amqp://guest:guest@localhost:5672"
+            - name: PLAYWRIGHT_MICROSERVICE_URL
+              value: "http://localhost:3000"
+            - name: USE_DB_AUTHENTICATION
+              value: "false"
+            - name: POSTGRES_HOST
+              value: "localhost"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              value: "firecrawl"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: firecrawl-secrets
+                  key: postgres-password
+            - name: POSTGRES_DB
+              value: "firecrawl"
+            - name: DATABASE_URL
+              value: "postgresql://firecrawl:$(POSTGRES_PASSWORD)@localhost:5432/firecrawl"
+            - name: BULL_AUTH_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: firecrawl-secrets
+                  key: bull-auth-key
+            - name: NUM_WORKERS_PER_QUEUE
+              value: "2"
+            - name: MAX_CRAWLS_PER_QUEUE
+              value: "10"
+            - name: LOGGING_LEVEL
+              value: "info"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+          readinessProbe:
+            httpGet:
+              path: /v1/health
+              port: 3002
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /v1/health
+              port: 3002
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            timeoutSeconds: 5
+        # Playwright browser service
+        - name: playwright
+          image: ghcr.io/mendableai/firecrawl-playwright:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+        # Redis
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+        # RabbitMQ
+        - name: rabbitmq
+          image: rabbitmq:3-alpine
+          ports:
+            - containerPort: 5672
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              value: "guest"
+            - name: RABBITMQ_DEFAULT_PASS
+              value: "guest"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "ping"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+        # PostgreSQL
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "firecrawl"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: firecrawl-secrets
+                  key: postgres-password
+            - name: POSTGRES_DB
+              value: "firecrawl"
+            - name: PGDATA
+              value: "/var/lib/postgresql/data/pgdata"
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "firecrawl"]
+            initialDelaySeconds: 15
+            periodSeconds: 10
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: firecrawl-postgres-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: firecrawl
+  namespace: firecrawl
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3002
+      targetPort: 3002
+  selector:
+    app: firecrawl
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: firecrawl
+  namespace: firecrawl
+spec:
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - firecrawl
+  rules:
+    - host: firecrawl
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: firecrawl
+                port:
+                  number: 3002
