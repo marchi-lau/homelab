@@ -2,7 +2,7 @@
 
 > Spec Number: 019
 > Created: 2026-01-14
-> Status: Planned
+> Status: Deployed
 > Manifest: clusters/homelab/apps/webhook-site.yaml
 
 ## Overview
