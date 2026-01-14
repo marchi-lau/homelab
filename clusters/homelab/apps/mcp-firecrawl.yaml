@@ -38,7 +38,7 @@ spec:
             - name: HOST
               value: "0.0.0.0"
             - name: FIRECRAWL_API_URL
-              value: "https://firecrawl.tailb1bee0.ts.net"
+              value: "http://firecrawl.firecrawl.svc.cluster.local:3002"
             - name: NODE_ENV
               value: "production"
           resources:

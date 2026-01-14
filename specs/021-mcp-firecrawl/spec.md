@@ -79,7 +79,7 @@ Note: MCP endpoints require specific protocol headers and don't support simple H
 |----------|-------|---------|
 | HTTP_STREAMABLE_SERVER | `true` | Enable HTTP Streamable mode |
 | HOST | `0.0.0.0` | Bind to all interfaces (required for K8s) |
-| FIRECRAWL_API_URL | `https://firecrawl.tailb1bee0.ts.net` | Self-hosted Firecrawl endpoint |
+| FIRECRAWL_API_URL | `http://firecrawl.firecrawl.svc.cluster.local:3002` | Internal K8s service endpoint |
 | NODE_ENV | `production` | Node environment |
 
 ### Secrets
@@ -160,6 +160,8 @@ kubectl rollout restart deployment/mcp-firecrawl -n mcp-firecrawl
   - **Fix:** Changed to TCP probes
 - **Issue:** npm install takes ~50s, causing liveness probe failures
   - **Fix:** Added startupProbe with 30 retries (5 minutes tolerance)
+- **Issue:** Pod can't resolve Tailscale DNS for Firecrawl backend
+  - **Fix:** Use internal K8s service URL instead of Tailscale hostname
 
 ### Related Commits
 - `1609f2d` feat(mcp-firecrawl): deploy MCP server for Firecrawl web scraping API
