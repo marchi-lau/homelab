@@ -39,7 +39,7 @@ Expose K3s services to the internet via Cloudflare Tunnel without opening ports.
 
 | Host | Service | Namespace |
 |------|---------|-----------|
-| n8n.marchi.app | n8n:5678 | n8n |
+| n8n-02.marchi.app | n8n:5678 | n8n |
 
 ---
 

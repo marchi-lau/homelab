@@ -39,8 +39,8 @@ data:
     - Automation:
         - n8n:
             icon: n8n.png
-            href: https://n8n.marchi.app
-            description: Workflow Automation
+            href: https://n8n.tailb1bee0.ts.net
+            description: Workflow Automation (Private)
         - Uptime Kuma:
             icon: uptime-kuma.png
             href: https://status.marchi.app

@@ -6,7 +6,7 @@ Self-hosted workflow automation platform.
 
 | Property | Value |
 |----------|-------|
-| **URL** | https://n8n.marchi.app |
+| **URL** | https://n8n-02.marchi.app |
 | **Namespace** | n8n |
 | **Image** | n8nio/n8n:latest |
 | **Storage** | 5Gi PVC (local-path) |
@@ -19,7 +19,7 @@ Self-hosted workflow automation platform.
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                     Cloudflare Tunnel                           │
-│                  n8n.marchi.app:443                          │
+│                  n8n-02.marchi.app:443                          │
 └────────────────────────┬────────────────────────────────────────┘
                          │ HTTPS
                          ▼
@@ -52,7 +52,7 @@ Self-hosted workflow automation platform.
 
 ## Access
 
-**Public URL:** https://n8n.marchi.app
+**Public URL:** https://n8n-02.marchi.app
 
 First access will prompt for account creation.
 
@@ -67,7 +67,7 @@ First access will prompt for account creation.
 | N8N_HOST | 0.0.0.0 | Listen address |
 | N8N_PORT | 5678 | Listen port |
 | N8N_PROTOCOL | http | Internal protocol |
-| WEBHOOK_URL | https://n8n.marchi.app/ | Public webhook URL |
+| WEBHOOK_URL | https://n8n-02.marchi.app/ | Public webhook URL |
 | GENERIC_TIMEZONE | Asia/Hong_Kong | Timezone |
 | NODE_ENV | production | Environment |
 
@@ -85,8 +85,8 @@ First access will prompt for account creation.
 n8n webhooks are accessible at:
 
 ```
-https://n8n.marchi.app/webhook/<webhook-id>
-https://n8n.marchi.app/webhook-test/<webhook-id>
+https://n8n-02.marchi.app/webhook/<webhook-id>
+https://n8n-02.marchi.app/webhook-test/<webhook-id>
 ```
 
 External services (Slack, GitHub, etc.) can trigger workflows via these URLs.
@@ -149,7 +149,7 @@ spec:
             - name: NODE_ENV
               value: "production"
             - name: WEBHOOK_URL
-              value: "https://n8n.marchi.app/"
+              value: "https://n8n-02.marchi.app/"
             - name: GENERIC_TIMEZONE
               value: "Asia/Hong_Kong"
           volumeMounts:
@@ -188,7 +188,7 @@ metadata:
 spec:
   ingressClassName: cloudflare-tunnel
   rules:
-    - host: n8n.marchi.app
+    - host: n8n-02.marchi.app
       http:
         paths:
           - path: /
@@ -264,7 +264,7 @@ See [[Network/Cloudflare-Tunnel#Troubleshooting|Cloudflare Tunnel Troubleshootin
 
 1. Verify `WEBHOOK_URL` is set correctly
 2. Check Cloudflare WAF isn't blocking webhook paths
-3. Test with: `curl -X POST https://n8n.marchi.app/webhook-test/<id>`
+3. Test with: `curl -X POST https://n8n-02.marchi.app/webhook-test/<id>`
 
 ---
 
