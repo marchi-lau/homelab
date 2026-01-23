@@ -56,7 +56,7 @@ spec:
             - name: NODE_ENV
               value: "production"
             - name: WEBHOOK_URL
-              value: "https://n8n.tailb1bee0.ts.net/"
+              value: "https://n8n.marchi.app/"
             - name: GENERIC_TIMEZONE
               value: "Asia/Hong_Kong"
             - name: N8N_PROXY_HOPS
@@ -95,12 +95,9 @@ metadata:
   name: n8n
   namespace: n8n
 spec:
-  ingressClassName: tailscale
-  tls:
-    - hosts:
-        - n8n
+  ingressClassName: cloudflare-tunnel
   rules:
-    - host: n8n
+    - host: n8n.marchi.app
       http:
         paths:
           - path: /
