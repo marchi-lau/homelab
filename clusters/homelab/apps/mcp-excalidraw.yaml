@@ -1,0 +1,84 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mcp-excalidraw
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-excalidraw
+  namespace: mcp-excalidraw
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mcp-excalidraw
+  template:
+    metadata:
+      labels:
+        app: mcp-excalidraw
+    spec:
+      containers:
+        - name: mcp-excalidraw-canvas
+          image: ghcr.io/yctimlin/mcp_excalidraw-canvas:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "3000"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-excalidraw
+  namespace: mcp-excalidraw
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: mcp-excalidraw
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mcp-excalidraw
+  namespace: mcp-excalidraw
+spec:
+  ingressClassName: cloudflare-tunnel
+  rules:
+    - host: excalidraw-mcp.marchi.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mcp-excalidraw
+                port:
+                  number: 3000

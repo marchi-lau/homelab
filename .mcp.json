@@ -27,6 +27,17 @@
         "mcp-remote",
         "https://mcp-firecrawl.tailb1bee0.ts.net/mcp"
       ]
+    },
+    "mcp-excalidraw": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "EXPRESS_SERVER_URL=https://excalidraw-mcp.marchi.app",
+        "ghcr.io/yctimlin/mcp_excalidraw:latest"
+      ]
     }
   }
 }
