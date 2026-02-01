@@ -63,7 +63,8 @@ spec:
               git clone --depth 1 https://github.com/yctimlin/mcp_excalidraw.git /app
               cd /app
               npm ci --production=false
-              npm run build
+              # Only build server, skip frontend (canvas container handles that)
+              npm run build:server
               npx -y supergateway \
                 --stdio "node dist/index.js" \
                 --port 8000 \
