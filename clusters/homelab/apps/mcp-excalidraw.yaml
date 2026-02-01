@@ -22,10 +22,12 @@ spec:
         app: mcp-excalidraw
     spec:
       containers:
-        - name: mcp-excalidraw-canvas
+        # Canvas server - Web UI with REST API
+        - name: canvas
           image: ghcr.io/yctimlin/mcp_excalidraw-canvas:latest
           ports:
             - containerPort: 3000
+              name: canvas
           env:
             - name: HOST
               value: "0.0.0.0"
@@ -50,7 +52,73 @@ spec:
               port: 3000
             initialDelaySeconds: 15
             periodSeconds: 30
+        # MCP server wrapped with supergateway for HTTP/SSE transport
+        - name: mcp-server
+          image: node:22-alpine
+          command:
+            - sh
+            - -c
+            - |
+              apk add --no-cache git
+              git clone --depth 1 https://github.com/yctimlin/mcp_excalidraw.git /app
+              cd /app
+              npm ci --production=false
+              npm run build
+              npx -y supergateway \
+                --stdio "node dist/index.js" \
+                --port 8000 \
+                --baseUrl http://0.0.0.0:8000 \
+                --ssePath /sse \
+                --messagePath /message
+          ports:
+            - containerPort: 8000
+              name: mcp
+          env:
+            - name: EXPRESS_SERVER_URL
+              value: "http://localhost:3000"
+            - name: NODE_ENV
+              value: "production"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          startupProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            periodSeconds: 30
+            timeoutSeconds: 5
 ---
+# Service for Canvas UI (public)
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-excalidraw-canvas
+  namespace: mcp-excalidraw
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+      name: canvas
+  selector:
+    app: mcp-excalidraw
+---
+# Service for MCP server (private)
 apiVersion: v1
 kind: Service
 metadata:
@@ -59,15 +127,17 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - port: 3000
-      targetPort: 3000
+    - port: 8000
+      targetPort: 8000
+      name: mcp
   selector:
     app: mcp-excalidraw
 ---
+# Ingress for Canvas UI (Cloudflare - public)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: mcp-excalidraw
+  name: mcp-excalidraw-canvas
   namespace: mcp-excalidraw
 spec:
   ingressClassName: cloudflare-tunnel
@@ -79,6 +149,29 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: mcp-excalidraw
+                name: mcp-excalidraw-canvas
                 port:
                   number: 3000
+---
+# Ingress for MCP server (Tailscale - private)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mcp-excalidraw
+  namespace: mcp-excalidraw
+spec:
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - mcp-excalidraw
+  rules:
+    - host: mcp-excalidraw
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mcp-excalidraw
+                port:
+                  number: 8000
