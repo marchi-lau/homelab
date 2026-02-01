@@ -22,6 +22,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 - [[Apps/homepage|Homepage Dashboard]]
 - [[Apps/ai-drawio|AI Draw.io Diagram Editor]]
 - [[Apps/mcp-cloudflare|MCP Cloudflare (Private)]]
+- [[Apps/mcp-excalidraw|MCP Excalidraw (Private)]]
 
 ---
 
@@ -103,6 +104,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 | **MCP Cloudflare** | https://mcp-cloudflare.tailb1bee0.ts.net | mcp-cloudflare | Any | None |
 | **MCP Airtable** | https://mcp-airtable.tailb1bee0.ts.net | mcp-airtable | Worker | None |
 | **Excalidraw** | https://excalidraw.marchi.app | excalidraw | Any | None |
+| **MCP Excalidraw** | https://excalidraw-mcp.marchi.app (Canvas) / https://mcp-excalidraw.tailb1bee0.ts.net (MCP) | mcp-excalidraw | Any | None |
 | **Miniflux** | https://miniflux.marchi.app | miniflux | Any | 2Gi local-path |
 
 ---
@@ -178,6 +180,7 @@ Services are exposed via Cloudflare Tunnel Ingress Controller. No open ports req
 | homepage.marchi.app | homepage:3000 | homepage |
 | diagram.marchi.app | ai-drawio:3000 | ai-drawio |
 | excalidraw.marchi.app | excalidraw:80 | excalidraw |
+| excalidraw-mcp.marchi.app | mcp-excalidraw-canvas:3000 | mcp-excalidraw |
 | miniflux.marchi.app | miniflux:8080 | miniflux |
 
 To expose a new service, add an Ingress:
