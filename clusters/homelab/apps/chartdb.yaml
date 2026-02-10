@@ -1,0 +1,68 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: chartdb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chartdb
+  namespace: chartdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chartdb
+  template:
+    metadata:
+      labels:
+        app: chartdb
+    spec:
+      containers:
+        - name: chartdb
+          image: ghcr.io/chartdb/chartdb:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: DISABLE_ANALYTICS
+              value: "true"
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chartdb
+  namespace: chartdb
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: chartdb
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chartdb
+  namespace: chartdb
+spec:
+  ingressClassName: cloudflare-tunnel
+  rules:
+    - host: chartdb.marchi.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: chartdb
+                port:
+                  number: 80

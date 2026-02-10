@@ -23,6 +23,7 @@ Speckit-compatible specifications for all K8s services deployed in the homelab c
 | 013 | [rsshub](./013-rsshub/spec.md) | RSS feed generator | Deployed |
 | 014 | [www-delta-and-beta](./014-www-delta-and-beta/spec.md) | Static website | Deployed |
 | 019 | [webhook-site](./019-webhook-site/spec.md) | Webhook testing tool | Deployed |
+| 022 | [chartdb](./022-chartdb/spec.md) | Database schema diagramming | Planned |
 
 ### Private MCP Services (Tailscale)
 

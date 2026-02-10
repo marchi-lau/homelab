@@ -25,3 +25,4 @@ resources:
   - firecrawl.yaml
   - mcp-firecrawl.yaml
   - mcp-excalidraw.yaml
+  - chartdb.yaml
