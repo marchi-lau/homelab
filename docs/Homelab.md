@@ -106,6 +106,7 @@ K3s Kubernetes cluster on Fujitsu S740 + Synology NAS with Flux GitOps and Cloud
 | **Excalidraw** | https://excalidraw.marchi.app | excalidraw | Any | None |
 | **MCP Excalidraw** | https://excalidraw-mcp.marchi.app (Canvas) / https://mcp-excalidraw.tailb1bee0.ts.net (MCP) | mcp-excalidraw | Any | None |
 | **Miniflux** | https://miniflux.marchi.app | miniflux | Any | 2Gi local-path |
+| **ChartDB** | https://chartdb.marchi.app | chartdb | Any | None |
 
 ---
 
@@ -182,6 +183,7 @@ Services are exposed via Cloudflare Tunnel Ingress Controller. No open ports req
 | excalidraw.marchi.app | excalidraw:80 | excalidraw |
 | excalidraw-mcp.marchi.app | mcp-excalidraw-canvas:3000 | mcp-excalidraw |
 | miniflux.marchi.app | miniflux:8080 | miniflux |
+| chartdb.marchi.app | chartdb:80 | chartdb |
 
 To expose a new service, add an Ingress:
 
