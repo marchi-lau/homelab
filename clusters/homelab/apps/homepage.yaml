@@ -89,6 +89,10 @@ data:
             icon: excalidraw.png
             href: https://excalidraw.marchi.app
             description: Whiteboard
+        - ChartDB:
+            icon: https://raw.githubusercontent.com/chartdb/chartdb/main/public/chartdb.png
+            href: https://chartdb.marchi.app
+            description: Database Diagrams
         - Webhook.site:
             icon: https://webhook.site/favicon.ico
             href: https://webhook.marchi.app
