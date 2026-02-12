@@ -1,0 +1,115 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aem
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: aem-repository
+  namespace: aem
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: synology-nfs
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aem
+  namespace: aem
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aem
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: aem
+    spec:
+      initContainers:
+        - name: fix-permissions
+          image: busybox:1.36
+          command: ['sh', '-c', 'chown -R 1000:1000 /aem/crx-quickstart/repository']
+          volumeMounts:
+            - name: aem-repository
+              mountPath: /aem/crx-quickstart/repository
+      containers:
+        - name: aem
+          image: aemdesign/aem:sdk-2026.1.23963
+          ports:
+            - containerPort: 8080
+          env:
+            - name: AEM_JVM_OPTS
+              value: "-server -Xms1024m -Xmx2048m -XX:MaxDirectMemorySize=256M -XX:+UseParallelGC -Djava.awt.headless=true"
+            - name: AEM_RUNMODE
+              value: "-Dsling.run.modes=author,crx3,crx3tar,nosamplecontent"
+            - name: TZ
+              value: "Asia/Hong_Kong"
+          volumeMounts:
+            - name: aem-repository
+              mountPath: /aem/crx-quickstart/repository
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+            limits:
+              memory: "3Gi"
+              cpu: "2000m"
+          startupProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            periodSeconds: 30
+      volumes:
+        - name: aem-repository
+          persistentVolumeClaim:
+            claimName: aem-repository
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aem
+  namespace: aem
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: aem
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aem
+  namespace: aem
+spec:
+  ingressClassName: cloudflare-tunnel
+  rules:
+    - host: aem.delta-and-beta.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: aem
+                port:
+                  number: 8080
