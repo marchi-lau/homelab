@@ -48,7 +48,7 @@ spec:
             - containerPort: 8080
           env:
             - name: AEM_JVM_OPTS
-              value: "-server -Xms1024m -Xmx2048m -XX:MaxDirectMemorySize=256M -XX:+UseParallelGC -Djava.awt.headless=true"
+              value: "-server -Xms4096m -Xmx6144m -XX:MaxDirectMemorySize=512M -XX:+UseParallelGC -Djava.awt.headless=true"
             - name: AEM_RUNMODE
               value: "-Dsling.run.modes=author,crx3,crx3tar,nosamplecontent"
             - name: TZ
@@ -58,11 +58,11 @@ spec:
               mountPath: /aem/crx-quickstart/repository
           resources:
             requests:
-              memory: "2Gi"
-              cpu: "500m"
+              memory: "4Gi"
+              cpu: "1000m"
             limits:
-              memory: "3Gi"
-              cpu: "2000m"
+              memory: "8Gi"
+              cpu: "4000m"
           startupProbe:
             tcpSocket:
               port: 8080
