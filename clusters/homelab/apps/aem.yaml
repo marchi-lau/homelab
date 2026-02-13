@@ -113,3 +113,25 @@ spec:
                 name: aem
                 port:
                   number: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aem-tailscale
+  namespace: aem
+spec:
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - aem
+  rules:
+    - host: aem
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: aem
+                port:
+                  number: 8080
