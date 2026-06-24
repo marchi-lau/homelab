@@ -108,13 +108,24 @@ spec:
               value: "10"
             - name: LOGGING_LEVEL
               value: "info"
+            # Harness waits for the api to bind :3002 before declaring startup ok.
+            # Default 60s is too short under the all-in-one boot storm; allow 5min.
+            - name: HARNESS_STARTUP_TIMEOUT_MS
+              value: "300000"
           resources:
             requests:
               memory: "512Mi"
               cpu: "200m"
             limits:
-              memory: "2Gi"
+              memory: "4Gi"
               cpu: "2000m"
+          # Slow startup (11 node workers): gate liveness/readiness until :3002 is up,
+          # otherwise livenessProbe SIGKILLs the pod mid-boot. 30 x 10s = 5min budget.
+          startupProbe:
+            tcpSocket:
+              port: 3002
+            periodSeconds: 10
+            failureThreshold: 30
           readinessProbe:
             httpGet:
               path: /
