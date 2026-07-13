@@ -31,6 +31,12 @@ spec:
       labels:
         app: croc
     spec:
+      # REQUIRED. k8s injects legacy "service link" env vars named <SVC>_PORT.
+      # Our Service is `croc`, so the pod gets CROC_PORT=tcp://<clusterIP>:9009 --
+      # but croc reads $CROC_PORT as its --port flag and dies parsing it as an int.
+      # Disabling service links removes the collision. croc's default ports are
+      # already 9009,9010,9011,9012,9013, so no flags are needed.
+      enableServiceLinks: false
       containers:
         - name: croc
           # No command override on purpose: the image's default entrypoint is
