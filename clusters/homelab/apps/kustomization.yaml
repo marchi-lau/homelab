@@ -27,3 +27,4 @@ resources:
   - mcp-excalidraw.yaml
   - chartdb.yaml
   - aem.yaml
+  - croc.yaml
