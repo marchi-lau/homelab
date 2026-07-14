@@ -167,7 +167,24 @@ Notes:
 - `--relay` and `--pass` are **global flags** — they go *before* the `send` subcommand.
 - Both users must be on the tailnet and permitted by the ACL above.
 - Since `CROC_PASS` is an env var croc reads natively, you can omit `--pass` if it's exported.
-- To pick your own code phrase instead of a random one: `croc ... send --code my-secret-code FILE`.
+- To pick your own code phrase, use the **`CROC_SECRET` env var** — croc v10 has **no
+  `--code` flag** and will just print usage and exit:
+
+  ```bash
+  CROC_SECRET="my-secret-code" croc --relay "$CROC_RELAY" --pass "$CROC_PASS" send FILE
+  # receiver:
+  CROC_SECRET="my-secret-code" croc --yes --relay "$CROC_RELAY" --pass "$CROC_PASS"
+  ```
+
+- **croc prefers a direct local peer connection** when both ends can see each other, and only
+  falls back to the relay otherwise. That's desirable (faster, still inside your network), but
+  it means a same-machine/same-LAN test does *not* exercise the relay. To force the relay path
+  — e.g. when verifying it — send with `--no-local`. A genuine relayed transfer shows the peer
+  as the relay pod's IP:
+
+  ```
+  Receiving (<-10.42.0.52:50349)     # 10.42.x.x = k3s pod CIDR = the relay
+  ```
 
 ---
 
