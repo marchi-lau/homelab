@@ -36,7 +36,11 @@ spec:
     spec:
       containers:
         - name: open-webui
-          image: ghcr.io/open-webui/open-webui:main
+          # Pinned to a stable release, NOT :main. The mutable :main tag drifted
+          # the code ahead of the persisted SQLite schema and an interrupted
+          # migration (during a master crash) left alembic stamped at head with
+          # columns still missing -> unrecoverable CrashLoop. See wiki/incidents.
+          image: ghcr.io/open-webui/open-webui:v0.10.2
           ports:
             - containerPort: 8080
           env:
