@@ -1,0 +1,32 @@
+---
+folder: incidents
+id-format: "NNNN-kebab-slug.md"
+---
+## Purpose
+One doc per outage, crash-loop, or false-alarm that cost real time — with its root cause,
+the evidence trail, and how it was resolved or worked around. This is the highest-value
+folder for a homelab: it's the institutional memory that stops the same failure from
+burning an afternoon twice. NOT routine ops (→ runbooks/) and NOT design rationale
+(→ architectures/), though incidents frequently spawn both.
+
+## File template
+Frontmatter: `id`, `title`, `status`, `created`, `updated`, `links`.
+Body:
+- `## Symptom` — what was observed, exactly (error strings, what looked broken).
+- `## Root cause` — the actual mechanism, stated plainly. Distinguish it from the symptom.
+- `## Evidence` — how we know: the probes/logs/commands that localized it.
+- `## Resolution` — what fixed it (or the workaround), and whether it's durable.
+- `## Recurrence risk / follow-ups` — is it pinned so it can't recur? Link the runbook or
+  architecture doc that hardens it.
+
+## Retro rules
+Extract anything that broke, crash-looped, or masqueraded as broken. Capture the
+*distinction* between symptom and cause (that's the reusable lesson). Resolve in place
+(status → done + fill `## Resolution`) when fixed; keep the doc for memory. If a fix was
+applied but NOT yet made durable (e.g. a live patch, or an unpinned config), keep status
+`active` and say so under follow-ups. False alarms are worth documenting when they mimic a
+real failure mode.
+
+## Cross-linking
+Links to the affected `[[services/NNNN]]`, the `[[runbooks/NNNN]]` that recovers/hardens
+it, and any `[[architectures/NNNN]]` whose fragility caused it.

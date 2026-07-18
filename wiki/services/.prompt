@@ -1,0 +1,31 @@
+---
+folder: services
+id-format: "NNNN-kebab-slug.md"
+---
+## Purpose
+One doc per deployed workload on the cluster (an app, MCP server, or infra service like
+the croc relay). Captures what it is, why it exists, how it's exposed, and its
+operational shape. NOT the general cluster design (→ architectures/) and NOT the story of
+a specific outage (→ incidents/). The authoritative manifest always lives at
+`clusters/homelab/apps/<name>.yaml`; this doc distills it and adds the "why".
+
+## File template
+Frontmatter: `id`, `title`, `status`, `created`, `updated`, `links`.
+Body:
+- `## Summary` — one paragraph: what the service does and who uses it.
+- `## Deployment` — namespace, image, key resources (memory/cpu/storage), manifest path.
+- `## Exposure` — how it's reached: Cloudflare tunnel host, Tailscale (operator vs Ingress)
+  hostname, or ClusterIP-only. Note LAN exposure if any.
+- `## Operational notes` — startup quirks, probes, scaling limits, secrets handling.
+- `## Related` — links.
+
+## Retro rules
+Extract services deployed, migrated, or materially reconfigured. New workload agreed and
+applied → create. Config changed with lasting effect (memory bump, exposure change, image
+pin) → update the doc in place, bump `updated`. Ignore transient live patches that Flux
+reverts (record the durable, committed state). Note when a service exists in-cluster but
+NOT in git (drift) under `## Operational notes`.
+
+## Cross-linking
+Links to `[[architectures/NNNN]]` (exposure/hosting decisions), `[[incidents/NNNN]]`
+(outages that hit this service), and `[[runbooks/NNNN]]` (how to deploy/operate it).

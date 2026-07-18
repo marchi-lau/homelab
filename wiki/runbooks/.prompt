@@ -1,0 +1,30 @@
+---
+folder: runbooks
+id-format: "NNNN-kebab-slug.md"
+---
+## Purpose
+Repeatable operational procedures — the copy-pasteable steps for a recurring task or
+recovery. "When X, do these steps." NOT the narrative of a one-off outage (→ incidents/,
+which links here) and NOT design rationale (→ architectures/). A good runbook is
+verifiable: each step has an expected result.
+
+## File template
+Frontmatter: `id`, `title`, `status`, `created`, `updated`, `links`.
+Body:
+- `## When to use` — the trigger condition / symptom that sends you here.
+- `## Prerequisites` — access, tools, KUBECONFIG, out-of-band paths (KVM, etc.).
+- `## Steps` — numbered, each with the exact command and the expected result.
+- `## Verification` — how to confirm success.
+- `## Notes / gotchas` — traps specific to this cluster.
+
+## Retro rules
+Extract any procedure performed more than once, or worth doing the same way next time:
+recovery flows, deploy-via-GitOps, forced Flux reconcile, node/IP fixes, containerd
+cleanup. When a procedure is refined (a better command, an extra safety step), update the
+runbook in place. Prefer this cluster's real values (IPs, hostnames, KUBECONFIG path) over
+generic placeholders.
+
+## Cross-linking
+Referenced by `[[incidents/NNNN]]` (the outage this recovers from) and
+`[[architectures/NNNN]]` (the decision this operationalizes); links to affected
+`[[services/NNNN]]`.

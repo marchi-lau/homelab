@@ -1,0 +1,30 @@
+---
+folder: architectures
+id-format: "NNNN-kebab-slug.md"
+---
+## Purpose
+Cluster-wide decisions and structural constraints (ADR-flavored): how services are
+exposed, how GitOps flows, hardware/capacity trade-offs, network topology. NOT per-service
+detail (→ services/) and NOT a specific outage (→ incidents/), though a recurring incident
+often reveals an architectural weakness worth recording here.
+
+## File template
+Frontmatter: `id`, `title`, `status`, `created`, `updated`, `links`.
+Body:
+- `## Context` — the forces at play; what problem or constraint prompted the decision.
+- `## Decision` — what was chosen, concretely.
+- `## Consequences` — what this makes easy, and what it costs.
+- `## Constraints honored` — verified facts the decision must respect (port ranges,
+  cert SANs, NFS root_squash, node capacity, etc.).
+- `## Alternatives considered` — what was rejected and why (keep — it prevents relitigation).
+
+## Retro rules
+Extract decisions with lasting consequence: exposure mechanism (Cloudflare vs Tailscale
+operator vs Ingress vs hostNetwork), GitOps branch/sync model, storage-class choice,
+capacity/placement strategy. Update when a decision is revisited; mark `superseded` and
+link the successor rather than deleting. Record verified external/system constraints even
+when they didn't change a decision — they shape future ones.
+
+## Cross-linking
+Referenced by `[[services/NNNN]]` (which follow the decision) and `[[incidents/NNNN]]`
+(which exposed the constraint); links to `[[runbooks/NNNN]]` that operationalize it.
